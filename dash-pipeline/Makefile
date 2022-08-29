@@ -496,6 +496,48 @@ deploy-ixiac:
 undeploy-ixiac:
 	cd ../test/third-party/traffic_gen && ./undeploy_ixiac.sh
 
+###############################
+# SAI-CHALLENGER TARGETS
+###############################
+
+SAI_CHALLENGER_PATH = $(PWD)/../test/SAI-Challenger.OCP
+
+sai-challenger-build:sai-challenger-client-build sai-challenger-server-build
+
+sai-challenger-start:sai-challenger-client-start sai-challenger-server-start sai-challenger-create-veth
+
+sai-challenger-stop:sai-challenger-client-stop sai-challenger-server-stop
+
+sai-challenger-test:
+	cd $(SAI_CHALLENGER_PATH) && ./exec.sh -i client pytest --setup=../setups/sai_dpu_client_server.json -v -k "test_dpu_basic"
+
+sai-challenger-client-build:
+	cd $(SAI_CHALLENGER_PATH) && ./build.sh -i client
+
+sai-challenger-client-start:
+#	cd $(SAI_CHALLENGER_PATH) && ./run.sh -i client -r
+	docker run --name sc-client-run \
+        -v $(SAI_CHALLENGER_PATH):/sai-challenger \
+        --cap-add=NET_ADMIN \
+        --device /dev/net/tun:/dev/net/tun \
+        --rm \
+        -v $(SAI_CHALLENGER_PATH)/../test-cases/challenger_basic_test/:/sai-challenger/tests \
+        -d sc-client
+
+sai-challenger-client-stop:
+	cd $(SAI_CHALLENGER_PATH) && ./run.sh -i client -c stop
+
+sai-challenger-server-build:
+	cd $(SAI_CHALLENGER_PATH) && ./build.sh -i server -a trident2 -t saivs
+
+sai-challenger-server-start:
+	cd $(SAI_CHALLENGER_PATH) && ./run.sh -i server -a trident2 -t saivs -r
+
+sai-challenger-server-stop:
+	cd $(SAI_CHALLENGER_PATH) && ./run.sh -i server -a trident2 -t saivs -c stop
+
+sai-challenger-create-veth:
+	sudo $(SAI_CHALLENGER_PATH)/veth-create-host.sh sc-server-trident2-saivs-run sc-client-run
 
 ###############################
 # ENVIRONMENT SETUP TARGETS
