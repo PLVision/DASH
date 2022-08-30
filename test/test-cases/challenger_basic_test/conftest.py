@@ -5,11 +5,6 @@ import traceback
 import pytest
 from sai_environment import init_setup
 
-curdir = os.path.dirname(os.path.realpath(__file__))
-commondir = os.path.join(curdir, '../common')
-sys.path.append(commondir)
-
-
 def pytest_addoption(parser):
     parser.addoption("--traffic", action="store_true", default=False, help="run tests with traffic")
     parser.addoption("--loglevel", action="store", default='NOTICE', help="syncd logging level")
