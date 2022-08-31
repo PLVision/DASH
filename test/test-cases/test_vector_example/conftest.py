@@ -1,9 +1,10 @@
 import logging
-import os
-import sys
-import traceback
+
 import pytest
+
+from sai_dpu import SaiDpu
 from sai_environment import init_setup
+
 
 def pytest_addoption(parser):
     parser.addoption("--traffic", action="store_true", default=False, help="run tests with traffic")
@@ -21,7 +22,7 @@ def exec_params(request):
     return config_param
 
 @pytest.fixture(scope="session")
-def dpu(exec_params):
+def dpu(exec_params) -> SaiDpu:
     dpu = exec_params["setup"]["DPU"][0]
     if dpu is not None:
         dpu.reset()
