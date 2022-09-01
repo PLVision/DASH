@@ -522,6 +522,9 @@ sai-challenger-test:
 #	cd $(SAI_CHALLENGER_PATH) && ./exec.sh -i client pytest --setup=../setups/sai_dpu_client_server.json -v -k "test_dpu_basic"
 	docker exec $(CONTAINER_SAI_CHALLENGER_CLIENT_NAME) pytest --setup=../setups/sai_dpu_client_server.json -v -k "test_dpu_basic"
 
+sai-challenger-test-ixiac:deploy-ixiac
+	docker exec $(CONTAINER_SAI_CHALLENGER_CLIENT_NAME) pytest --setup=../setups/snappi_bmv2_client_server.json -v -k "test_dpu_basic"
+
 sai-challenger-client-build:
 #	cd $(SAI_CHALLENGER_PATH) && ./build.sh -i client
 	docker build \
@@ -537,6 +540,7 @@ sai-challenger-client-start:
 		--rm \
 		-v $(SAI_CHALLENGER_PATH)/../test-cases/test_vector_example/:/sai-challenger/tests \
 		-d \
+		--network=host \
 		--name $(CONTAINER_SAI_CHALLENGER_CLIENT_NAME) \
 		$(DOCKER_SAI_CHALLENGER_CLIENT)
 
