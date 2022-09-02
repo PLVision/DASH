@@ -537,6 +537,7 @@ sai-challenger-client-start:
 		--cap-add=NET_ADMIN \
 		--device /dev/net/tun:/dev/net/tun \
 		--rm \
+		--network=host \
 		-v $(SAI_CHALLENGER_PATH)/../test-cases/test_vector_example/:/sai-challenger/tests \
 		-v $(PWD)/../:/dash \
 		-d \

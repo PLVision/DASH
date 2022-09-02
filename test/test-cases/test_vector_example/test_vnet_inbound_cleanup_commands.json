@@ -29,7 +29,7 @@
     }
   },
   {
-    "name": "eni",
+    "name": "eni_id",
     "op": "remove",
     "type" : "SAI_OBJECT_TYPE_ENI",
     "key" : "$eni_id"

@@ -2,6 +2,8 @@ import logging
 
 import pytest
 
+import sys
+sys.path.insert(0, '/sai-challenger/common')  # Needed for correct load_module
 from sai_dpu import SaiDpu
 from sai_environment import init_setup
 
