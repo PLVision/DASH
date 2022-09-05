@@ -509,6 +509,8 @@ CONTAINER_SAI_CHALLENGER_CLIENT_NAME = $(DOCKER_SAI_CHALLENGER_CLIENT)-run
 # SAI-C SERVER STAFF IS TEMPORARY AND WILL BE REMOVED LATER
 CONTAINER_SAI_CHALLENGER_SERVER_NAME = sc-server-trident2-saivs-run
 
+CONTAINER_SAI_CHALLENGER_CLIENT_EXEC = docker exec $(CONTAINER_SAI_CHALLENGER_CLIENT_NAME)
+
 # SAI-C SERVER STAFF IS TEMPORARY AND WILL BE REMOVED LATER
 sai-challenger-build:sai-challenger-client-build sai-challenger-server-build
 
@@ -519,10 +521,13 @@ sai-challenger-start:sai-challenger-client-start sai-challenger-server-start sai
 sai-challenger-stop:sai-challenger-client-stop sai-challenger-server-stop
 
 sai-challenger-test:
-	docker exec $(CONTAINER_SAI_CHALLENGER_CLIENT_NAME) pytest --setup=../setups/sai_dpu_client_server.json -v -k "test_dpu_basic"
+	$(CONTAINER_SAI_CHALLENGER_CLIENT_EXEC) pytest --setup=../setups/sai_dpu_client_server.json -v -k "test_dpu_basic"
 
 sai-challenger-test-ixiac:deploy-ixiac
-	docker exec $(CONTAINER_SAI_CHALLENGER_CLIENT_NAME) pytest --setup=../setups/snappi_bmv2_client_server.json -v -k "test_dpu_basic"
+	$(CONTAINER_SAI_CHALLENGER_CLIENT_EXEC) pytest --setup=../setups/snappi_bmv2_client_server.json -v -k "test_dpu_basic"
+
+sai-challenger-test-thrift:deploy-ixiac
+	$(CONTAINER_SAI_CHALLENGER_CLIENT_EXEC) pytest -sv --setup=sai_dpu_client_server.json test_sai_vnet_inbound.py
 
 sai-challenger-client-build:
 	cd $(SAI_CHALLENGER_PATH) && ./build.sh -i client
@@ -541,7 +546,6 @@ sai-challenger-client-start:
 		-v $(SAI_CHALLENGER_PATH)/../test-cases/test_vector_example/:/sai-challenger/tests \
 		-v $(PWD)/../:/dash \
 		-d \
-		--network=host \
 		--name $(CONTAINER_SAI_CHALLENGER_CLIENT_NAME) \
 		$(DOCKER_SAI_CHALLENGER_CLIENT)
 
