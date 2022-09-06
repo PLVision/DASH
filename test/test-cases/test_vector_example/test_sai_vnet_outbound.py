@@ -141,6 +141,13 @@ class TestSaiVnetOutbound:
             # dpu.process_commands(confgen.items())
             pprint(item)
 
+        with (current_file_dir / 'test_vnet_outbound_setup_commands.json').open(mode='r') as config_file:
+            setup_commands = json.load(config_file)
+
+        result = [*dpu.process_commands(setup_commands)]
+        print("\n======= SAI commands RETURN values =======")
+        pprint(result)
+
     def test_run_traffic_check(self, dpu, dataplane):
 
         src_vm_ip = "10.1.1.10"
@@ -193,3 +200,10 @@ class TestSaiVnetOutbound:
             item['OP'] = 'remove'
             pprint(item)
             #dpu.process_commands(item)
+
+        with (current_file_dir / 'test_vnet_outbound_cleanup_commands.json').open(mode='r') as config_file:
+            cleanup_commands = json.load(config_file)
+
+        result = [*dpu.process_commands(cleanup_commands)]
+        print("\n======= SAI commands RETURN values =======")
+        pprint(result)
