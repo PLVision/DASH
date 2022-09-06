@@ -1,7 +1,14 @@
+import json
+from pathlib import Path
 from pprint import pprint
-import pytest
-from saichallenger.dataplane.ptf_testutils import send_packet, verify_packet, simple_udp_packet, simple_vxlan_packet
 
+import pytest
+from saichallenger.dataplane.ptf_testutils import (send_packet,
+                                                   simple_udp_packet,
+                                                   simple_vxlan_packet,
+                                                   verify_packet)
+
+current_file_dir = Path(__file__).parent
 
 # Constants
 VIP = "10.10.1.1"
@@ -18,7 +25,7 @@ INNER_REMOTE_IP = "172.19.1.1"
 # Test Vector
 TEST_VNET_INBOUND_CONFIG = {
 
-    'ENI_COUNT': 2,
+    'ENI_COUNT': 1,
 
     'DASH_VIP': [
         {'vip_1': {'IPv4': VIP}}
@@ -29,7 +36,7 @@ TEST_VNET_INBOUND_CONFIG = {
     ],
 
     'DASH_ACL_GROUP': [
-        {'acl_out_1': {'ADDR_FAMILY': 'IPv4"'}}
+        {'acl_out_1': {'ADDR_FAMILY': 'IPv4'}}
     ],
 
     'DASH_ACL_RULE': [
@@ -102,11 +109,14 @@ class TestSaiVnetInbound:
 
         confgen.mergeParams(TEST_VNET_INBOUND_CONFIG)
         confgen.generate()
-
         for item in confgen.items():
-            # dpu.process_commands(item)
-            # dpu.process_commands(confgen.items())
             pprint(item)
+
+        with (current_file_dir / 'test_vnet_inbound_setup_commands.json').open(mode='r') as config_file:
+            vnet_inbound_setup_commands = json.load(config_file)
+        result = [*dpu.process_commands(vnet_inbound_setup_commands)]
+        print("\n======= SAI commands RETURN values =======")
+        pprint(result)
 
     def test_run_traffic_check(self, dpu, dataplane):
         # Check forwarding
@@ -144,19 +154,17 @@ class TestSaiVnetInbound:
                                         vxlan_vni=INBOUND_ROUTING_VNI,
                                         inner_frame=inner_exp_pkt)
         # TODO: Fix IP chksum
-        # vxlan_exp_pkt[IP].chksum = 0
+        vxlan_exp_pkt['IP'].chksum = 0
         # # TODO: Fix UDP length
-        # vxlan_exp_pkt[IP][UDP][VXLAN].flags = 0
+        vxlan_exp_pkt['IP']['UDP']['VXLAN'].flags = 0
 
         print("\nSending outbound packet...\n\n", vxlan_pkt.__repr__())
-        # send_packet(dataplane, 0, vxlan_pkt)
+        send_packet(dataplane, 0, vxlan_pkt)
 
         print("\nVerifying packet...\n", vxlan_exp_pkt.__repr__())
-        # verify_packet(dataplane, vxlan_exp_pkt, 1)
+        verify_packet(dataplane, vxlan_exp_pkt, 1)
 
         print ("run_traffic_check OK")
-
-        pytest.set_trace()
 
     def test_remove_vnet_config(self, confgen, dpu, dataplane):
 
@@ -166,4 +174,10 @@ class TestSaiVnetInbound:
         for item in confgen.items():
             item['OP'] = 'remove'
             pprint(item)
-            #dpu.process_commands(item)
+
+        with (current_file_dir / 'test_vnet_inbound_cleanup_commands.json').open(mode='r') as config_file:
+            vnet_inbound_cleanup_commands = json.load(config_file)
+
+        result = [*dpu.process_commands(vnet_inbound_cleanup_commands)]
+        print("\n======= SAI commands RETURN values =======")
+        pprint(result)
