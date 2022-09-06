@@ -1,7 +1,14 @@
+import json
+from pathlib import Path
 from pprint import pprint
-import pytest
-from saichallenger.dataplane.ptf_testutils import send_packet, verify_packet, simple_udp_packet, simple_vxlan_packet
 
+import pytest
+from saichallenger.dataplane.ptf_testutils import (send_packet,
+                                                   simple_udp_packet,
+                                                   simple_vxlan_packet,
+                                                   verify_packet)
+
+current_file_dir = Path(__file__).parent
 
 # Constants
 SWITCH_ID = 5
@@ -53,19 +60,6 @@ TEST_VNET_OUTBOUND_CONFIG = {
     'DASH_ENI': [
         { 'eni':
             {'ACL_GROUP': {
-#                'INBOUND': [{ 'STAGE1': '$in_acl_group_id' },
-#                            { 'STAGE2': '$in_acl_group_id' },
-#                            { 'STAGE3': '$in_acl_group_id' },
-#                            { 'STAGE4': '$in_acl_group_id' },
-#                            { 'STAGE5': '$in_acl_group_id' }
-#                            ],
-#                'OUTBOUND': [{ 'STAGE1': '$out_acl_group_id' },
-#                             { 'STAGE2': '$out_acl_group_id' },
-#                             { 'STAGE3': '$out_acl_group_id' },
-#                             { 'STAGE4': '$out_acl_group_id' },
-#                             { 'STAGE5': '$out_acl_group_id' }
-#                             ]
-#                            },
                 'INBOUND': [{ 'STAGE1': 0 },
                             { 'STAGE2': 0 },
                             { 'STAGE3': 0 },
@@ -111,8 +105,8 @@ TEST_VNET_OUTBOUND_CONFIG = {
             { 'SWITCH_ID': '$SWITCH_ID',
               'ENI_ID': '$eni',
               'DESTINATION': CA_PREFIX,
-              'ACTION', 'ROUTE_VNET',
-              'DST_VNET_ID', '$vnet' }
+              'ACTION': 'ROUTE_VNET',
+              'DST_VNET_ID': '$vnet' }
         }
     ],
 
@@ -180,16 +174,16 @@ class TestSaiVnetOutbound:
                                         vxlan_vni=VNET_VNI,
                                         inner_frame=inner_exp_pkt)
         # TODO: Fix IP chksum
-        vxlan_exp_pkt[IP].chksum = 0
+        vxlan_exp_pkt['IP'].chksum = 0
         # TODO: Fix UDP length
-        vxlan_exp_pkt[IP][UDP][VXLAN].flags = 0
+        vxlan_exp_pkt['IP']['UDP']['VXLAN'].flags = 0
+        self.pkt_exp = vxlan_exp_pkt
 
-        # self.pkt_exp = vxlan_exp_pkt
-        # print("\nSending outbound packet...\n\n", vxlan_pkt.__repr__())
-        # send_packet(self, 0, vxlan_pkt)
-        # print("\nVerifying packet...\n", self.pkt_exp.__repr__())
-        # verify_packet(self, self.pkt_exp, 0)
-        # print ("test_sai_vnet_outbound OK")
+        print("\nSending outbound packet...\n\n", vxlan_pkt.__repr__())
+        send_packet(self, 0, vxlan_pkt)
+        print("\nVerifying packet...\n", self.pkt_exp.__repr__())
+        verify_packet(self, self.pkt_exp, 0)
+        print ("test_sai_vnet_outbound OK")
 
     def test_remove_vnet_config(self, confgen, dpu, dataplane):
 

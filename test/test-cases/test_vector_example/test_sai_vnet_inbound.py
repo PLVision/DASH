@@ -158,6 +158,7 @@ class TestSaiVnetInbound:
         # # TODO: Fix UDP length
         vxlan_exp_pkt['IP']['UDP']['VXLAN'].flags = 0
 
+        dataplane.start_capture()
         print("\nSending outbound packet...\n\n", vxlan_pkt.__repr__())
         send_packet(dataplane, 0, vxlan_pkt)
 
