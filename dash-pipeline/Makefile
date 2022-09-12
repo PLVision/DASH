@@ -1,9 +1,9 @@
 SHELL = /bin/bash
 
 # "All" type targets for convenience
-all:fix-perms p4 sai saithrift-server docker-saithrift-client test
+all:fix-perms p4 sai saithrift-server docker-saithrift-client test build-saic-client
 
-run-all-tests:run-libsai-test deploy-ixiac run-saithrift-client-tests
+run-all-tests:run-libsai-test deploy-ixiac run-saithrift-client-tests run-saic-test-thrift
 run-saithrift-client-tests: run-saithrift-ptftests run-saithrift-pytests
 run-saithrift-client-dev-tests: run-saithrift-dev-ptftests run-saithrift-dev-pytests
 
@@ -11,7 +11,7 @@ run-saithrift-client-dev-tests: run-saithrift-dev-ptftests run-saithrift-dev-pyt
 clean: fix-perms kill-all p4-clean sai-clean test-clean network-clean saithrift-server-clean
 	rm -rf bmv2/dash_pipeline.bmv2
 
-kill-all: kill-saithrift-server kill-switch undeploy-ixiac
+kill-all: kill-saithrift-server kill-switch undeploy-ixiac kill-saic-client
 
 
 .PHONY: fix-perms
@@ -515,7 +515,7 @@ build-saic-client:
 		-t $(DOCKER_SAI_CHALLENGER_CLIENT) \
 		.
 
-run-saic-client:
+run-saic-client: deploy-ixiac
 	docker run \
 		-v $(SAI_CHALLENGER_PATH):/sai-challenger \
 		--cap-add=NET_ADMIN \
@@ -531,8 +531,8 @@ run-saic-client:
 kill-saic-client: undeploy-ixiac
 	docker container stop $(CONTAINER_SAI_CHALLENGER_CLIENT_NAME)
 
-run-saic-test-thrift: deploy-ixiac
-	$(CONTAINER_SAI_CHALLENGER_CLIENT_EXEC) pytest -sv --setup=sai_dpu_client_server.json test_sai_vnet_inbound.py
+# run-saic-test-thrift: deploy-ixiac
+# 	$(CONTAINER_SAI_CHALLENGER_CLIENT_EXEC) pytest -sv --setup=sai_dpu_client_server.json test_sai_vnet_inbound.py
 
 ###############################
 # ENVIRONMENT SETUP TARGETS
