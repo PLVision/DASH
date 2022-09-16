@@ -516,9 +516,12 @@ ifeq (run-saic-test-thrift,$(firstword $(MAKECMDGOALS)))
   $(eval $(SAI_CHALLENGER_TEST):;@:)
 endif
 # If setup file's isn't passed, set it to the default.
-# If test's name isn't passed, leave it blank to start all tests.
 ifeq ($(SAI_CHALLENGER_SETUP_FILE),)
-SAI_CHALLENGER_SETUP_FILE := ../setups/sai_dpu_client_server.json
+SAI_CHALLENGER_SETUP_FILE := sai_dpu_client_server_snappi.json
+endif
+# If test's name isn't passed, set it to the default.
+ifeq ($(SAI_CHALLENGER_TEST),)
+SAI_CHALLENGER_TEST := test_sai_vnet_*.py
 endif
 
 build-saic-client:
@@ -550,7 +553,12 @@ kill-saic-client: undeploy-ixiac
 # @param SAI_CHALLENGER_TEST Test's name to start.
 #        Default is empty to start all tests.
 run-saic-test-thrift: deploy-ixiac
-	-$(CONTAINER_SAI_CHALLENGER_CLIENT_EXEC) pytest -sv --setup=$(SAI_CHALLENGER_SETUP_FILE) $(SAI_CHALLENGER_TEST)
+# Check if client container is started. If not - start SAI-Challenger client
+  ifneq ($(shell docker container inspect -f '{{.State.Status}}' $(CONTAINER_SAI_CHALLENGER_CLIENT_NAME)), running)
+	echo "SAI-Challenger client container isn't running. Starting client..."
+	@make -C . run-saic-client
+  endif
+	-$(CONTAINER_SAI_CHALLENGER_CLIENT_EXEC) sh -c "pytest -sv --setup=$(SAI_CHALLENGER_SETUP_FILE) $(SAI_CHALLENGER_TEST)"
 
 ###############################
 # ENVIRONMENT SETUP TARGETS

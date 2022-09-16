@@ -11,7 +11,7 @@
 **kill-saic-client**: Stop Ixia-C and sc-client-thrift-run container.
 
 **run-saic-test-thrift**: Run test manually. This target may be triggerred with passing parameters, or with default parameters.  
-Run with default parameters(Setup file: ../setups/sai_dpu_client_server.json; Test: all tests):
+Run with default parameters(Setup file: sai_dpu_client_server_snappi.json; Test: test_sai_vnet_*.pys):
 ```
 make run-saic-test-thrift
 ```
@@ -43,7 +43,6 @@ Run in the 3 separate windows/tabs.
 ```
 make run-switch
 make run-saithrift-server
-make run-saic-client
 ```
 
 ## Run tests manually
