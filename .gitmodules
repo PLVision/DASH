@@ -4,7 +4,7 @@
 	branch = dash-ptf-ci
 [submodule "test/SAI-Challenger.OCP"]
 	path = test/SAI-Challenger.OCP
-	url = https://github.com/plvisiondevs/SAI-Challenger.OCP
+	url = https://github.com/PLVision/SAI-Challenger.OCP
 	branch = dash-testing
 [submodule "dash-pipeline/cgyang"]
 	path = dash-pipeline/cgyang
