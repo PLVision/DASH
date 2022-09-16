@@ -508,6 +508,19 @@ CONTAINER_SAI_CHALLENGER_CLIENT_NAME = $(DOCKER_SAI_CHALLENGER_CLIENT)-run
 
 CONTAINER_SAI_CHALLENGER_CLIENT_EXEC = docker exec $(CONTAINER_SAI_CHALLENGER_CLIENT_NAME)
 
+# Add passing parameters to the run-saic-test-thrift target.
+ifeq (run-saic-test-thrift,$(firstword $(MAKECMDGOALS)))
+  SAI_CHALLENGER_SETUP_FILE := $(wordlist 2, 2, $(MAKECMDGOALS))
+  SAI_CHALLENGER_TEST := $(wordlist 3, 3, $(MAKECMDGOALS))
+  $(eval $(SAI_CHALLENGER_SETUP_FILE):;@:)
+  $(eval $(SAI_CHALLENGER_TEST):;@:)
+endif
+# If setup file's isn't passed, set it to the default.
+# If test's name isn't passed, leave it blank to start all tests.
+ifeq ($(SAI_CHALLENGER_SETUP_FILE),)
+SAI_CHALLENGER_SETUP_FILE := ../setups/sai_dpu_client_server.json
+endif
+
 build-saic-client:
 	cd $(SAI_CHALLENGER_PATH) && ./build.sh -i client
 	docker build \
@@ -529,10 +542,15 @@ run-saic-client: deploy-ixiac
 		$(DOCKER_SAI_CHALLENGER_CLIENT)
 
 kill-saic-client: undeploy-ixiac
-	docker container stop $(CONTAINER_SAI_CHALLENGER_CLIENT_NAME)
+	-docker container stop $(CONTAINER_SAI_CHALLENGER_CLIENT_NAME)
 
-# run-saic-test-thrift: deploy-ixiac
-# 	$(CONTAINER_SAI_CHALLENGER_CLIENT_EXEC) pytest -sv --setup=sai_dpu_client_server.json test_sai_vnet_inbound.py
+# @brief Target with passing parameters.
+# @param SAI_CHALLENGER_SETUP_FILE Path to the setup file.
+#        Default is "../setups/sai_dpu_client_server.json".
+# @param SAI_CHALLENGER_TEST Test's name to start.
+#        Default is empty to start all tests.
+run-saic-test-thrift: deploy-ixiac
+	-$(CONTAINER_SAI_CHALLENGER_CLIENT_EXEC) pytest -sv --setup=$(SAI_CHALLENGER_SETUP_FILE) $(SAI_CHALLENGER_TEST)
 
 ###############################
 # ENVIRONMENT SETUP TARGETS
