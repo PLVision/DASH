@@ -1,38 +1,20 @@
 [
-  {
-    "name": "ocpe",
-    "op": "remove"
-  },
-  {
-    "name": "ore",
-    "op": "remove"
-  },
-  {
-    "name": "eam",
-    "op": "remove"
-  },
-  {
-    "name": "eni",
-    "op": "remove"
-  },
-  {
-    "name": "vnet",
-    "op": "remove"
-  },
-  {
-    "name": "out_acl_group_id",
-    "op": "remove"
-  },
-  {
-    "name": "in_acl_group_id",
-    "op": "remove"
-  },
-  {
-    "name": "dle",
-    "op": "remove"
-  },
-  {
-    "name": "vpe",
-    "op": "remove"
-  }
+  { "name": "ocpe#4", "op": "remove" },
+  { "name": "ocpe#3", "op": "remove" },
+  { "name": "ocpe#2", "op": "remove" },
+  { "name": "ocpe#1", "op": "remove" },
+  { "name": "ore#4", "op": "remove" },
+  { "name": "ore#3", "op": "remove" },
+  { "name": "ore#2", "op": "remove" },
+  { "name": "ore#1", "op": "remove" },
+  { "name": "eam#2", "op": "remove" },
+  { "name": "eam#1", "op": "remove" },
+  { "name": "eni#2", "op": "remove" },
+  { "name": "eni#1", "op": "remove" },
+  { "name": "vnet#2000", "op": "remove" },
+  { "name": "vnet#1000", "op": "remove" },
+  { "name": "dle#200", "op": "remove" },
+  { "name": "dle#100", "op": "remove" },
+  { "name": "vpe#2", "op": "remove" },
+  { "name": "vpe#1", "op": "remove" }
 ]
