@@ -505,7 +505,7 @@ DOCKER_SAI_CHALLENGER_CLIENT = anton7811/dash-saichallenger-client:220920
 CONTAINER_SAI_CHALLENGER_CLIENT_NAME = dash-saichallenger-client-$(USER)
 
 # Add passing parameters to the run-saic-test-thrift target.
-ifeq (run-saic-test-thrift,$(firstword $(MAKECMDGOALS)))
+ifeq (run-saic-tests,$(firstword $(MAKECMDGOALS)))
   SAI_CHALLENGER_SETUP_FILE := $(wordlist 2, 2, $(MAKECMDGOALS))
   SAI_CHALLENGER_TEST := $(wordlist 3, 3, $(MAKECMDGOALS))
   $(eval $(SAI_CHALLENGER_SETUP_FILE):;@:)
