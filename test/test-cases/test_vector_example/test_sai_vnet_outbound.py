@@ -35,90 +35,92 @@ TEST_VNET_OUTBOUND_CONFIG = {
     'IP_MAPPED_PER_ACL_RULE':           1,
     'IP_ROUTE_DIVIDER_PER_ACL_RULE':    8,
 
-    'DASH_VIP': [
-        { 'vpe':
-            { 'SWITCH_ID': '$SWITCH_ID',
-              'IPv4': VIP }
+    'DASH_VIP': {
+        'vpe': {
+            'SWITCH_ID': '$SWITCH_ID',
+            'IPv4': VIP
         }
-    ],
+    },
 
-    'DASH_DIRECTION_LOOKUP': [
-        { 'dle':
-            { 'SWITCH_ID': '$SWITCH_ID',
-              'VNI': OUTBOUND_VNI,
-              'ACTION': 'SET_OUTBOUND_DIRECTION' }
+    'DASH_DIRECTION_LOOKUP': {
+        'dle': {
+            'SWITCH_ID': '$SWITCH_ID',
+            'VNI': OUTBOUND_VNI,
+            'ACTION': 'SET_OUTBOUND_DIRECTION'
         }
-    ],
+    },
 
-    'DASH_ACL_GROUP': [
-        { 'in_acl_group_id':
-            { 'ADDR_FAMILY': 'IPv4' }
+    'DASH_ACL_GROUP': {
+        'in_acl_group_id': {
+            'ADDR_FAMILY': 'IPv4'
         },
-        { 'out_acl_group_id':
-            { 'ADDR_FAMILY': 'IPv4' }
+        'out_acl_group_id': {
+            'ADDR_FAMILY': 'IPv4'
         }
-    ],
+    },
 
-    'DASH_VNET': [
-        { 'vnet':
-            { 'VNI': VNET_VNI }
+    'DASH_VNET': {
+        'vnet': {
+            'VNI': VNET_VNI
         }
-    ],
+    },
 
-    'DASH_ENI': [
-        { 'eni':
-            {'ACL_GROUP': {
-                'INBOUND': [{ 'STAGE1': 0 },
-                            { 'STAGE2': 0 },
-                            { 'STAGE3': 0 },
-                            { 'STAGE4': 0 },
-                            { 'STAGE5': 0 }
-                            ],
-                'OUTBOUND': [{ 'STAGE1': 0 },
-                             { 'STAGE2': 0 },
-                             { 'STAGE3': 0 },
-                             { 'STAGE4': 0 },
-                             { 'STAGE5': 0 }
-                             ]
-                            },
+    'DASH_ENI': {
+        'eni': {
+            'ACL_GROUP': {
+                'INBOUND': {
+                    'STAGE1': 0,
+                    'STAGE2': 0,
+                    'STAGE3': 0,
+                    'STAGE4': 0,
+                    'STAGE5': 0
+                },
+                'OUTBOUND': {
+                    'STAGE1': 0,
+                    'STAGE2': 0,
+                    'STAGE3': 0,
+                    'STAGE4': 0,
+                    'STAGE5': 0
+                }
+            },
             'ADMIN_STATE': True,
             'CPS': 10000,
             'FLOWS': 10000,
             'PPS': 100000,
             'VM_UNDERLAY_DIP': SRC_VM_PA_IP,
             'VM_VNI': VM_VNI,
-            'VNET_ID': '$vnet'}
+            'VNET_ID': '$vnet'
         }
-    ],
+    },
 
-    'DASH_ENI_ETHER_ADDRESS_MAP': [
-        { 'eam':
-            { 'SWITCH_ID': '$SWITCH_ID',
-              'MAC': ENI_MAC,
-              'ENI_ID': '$eni' }
+    'DASH_ENI_ETHER_ADDRESS_MAP': {
+        'eam': {
+            'SWITCH_ID': '$SWITCH_ID',
+            'MAC': ENI_MAC,
+            'ENI_ID': '$eni'
         }
-    ],
+    },
 
-    'DASH_OUTBOUND_ROUTING': [
-        { 'ore':
-            { 'SWITCH_ID': '$SWITCH_ID',
-              'ENI_ID': '$eni',
-              'DESTINATION': CA_PREFIX,
-              'ACTION': 'ROUTE_VNET',
-              'DST_VNET_ID': '$vnet' }
+    'DASH_OUTBOUND_ROUTING': {
+        'ore': {
+            'SWITCH_ID': '$SWITCH_ID',
+            'ENI_ID': '$eni',
+            'DESTINATION': CA_PREFIX,
+            'ACTION': 'ROUTE_VNET',
+            'DST_VNET_ID': '$vnet'
         }
-    ],
+    },
 
-    'DASH_OUTBOUND_CA_TO_PA': [
-        { 'ocpe':
-            { 'SWITCH_ID': '$SWITCH_ID',
-              'DST_VNET_ID': '$vnet',
-              'DIP': DST_PA_IP,
-              'UNDERLAY_DIP': DST_PA_IP,
-              'OVERLAY_DMAC': DST_CA_MAC,
-              'USE_DST_VNET_VNI': True }
+    'DASH_OUTBOUND_CA_TO_PA': {
+        'ocpe': {
+            'SWITCH_ID': '$SWITCH_ID',
+            'DST_VNET_ID': '$vnet',
+            'DIP': DST_PA_IP,
+            'UNDERLAY_DIP': DST_PA_IP,
+            'OVERLAY_DMAC': DST_CA_MAC,
+            'USE_DST_VNET_VNI': True
         }
-    ]
+    }
 }
 
 # Constants for scale outbound
@@ -146,6 +148,7 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             }
         }
     },
+
     'DASH_DIRECTION_LOOKUP': {
         'dle': {
             'count': NUMBER_OF_DLE,
@@ -158,6 +161,7 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             'ACTION': 'SET_OUTBOUND_DIRECTION'
         }
     },
+
     'DASH_ACL_GROUP': {
         'in_acl_group_id': {
             'count': 'NUMBER_OF_IN_ACL_GROUP',
@@ -168,6 +172,7 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             'ADDR_FAMILY': 'IPv4'
         }
     },
+
     'DASH_VNET': {
         'vnet': {
             'count': NUMBER_OF_VNET,
@@ -178,6 +183,7 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             }
         }
     },
+
     'DASH_ENI': {
         'eni': {
             'count': NUMBER_OF_ENI,
@@ -233,6 +239,7 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             }
         }
     },
+
     'DASH_ENI_ETHER_ADDRESS_MAP': {
         'eam': {
             'count': NUMBER_OF_EAM,
@@ -249,6 +256,7 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             }
         }
     },
+
     'DASH_OUTBOUND_ROUTING': {
         'ore': {
             'count': NUMBER_OF_ORE,
@@ -273,6 +281,7 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             }
         }
     },
+
     'DASH_OUTBOUND_CA_TO_PA': {
         'ocpe': {
             'count': NUMBER_OF_OCPE,
