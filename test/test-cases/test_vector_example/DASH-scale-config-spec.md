@@ -27,20 +27,19 @@ For scaling purposes sequence generator could be used for creating big number of
 ### Sequence generator attributes:
 
 * `count` - The number of entries (default is 1)
-* `type`  - Type of the entry [INT, IP, MAC, OID] (default is INT)
 * `start` - The first entry (no default values)
-* `step`  - Increment step (default values depend on the type: INT - 1, IP - "0.0.0.1", MAC - "00:00:00:00:00:01", no default for OID)
+* `step`  - Increment step (default is 1)
 * `delay` - Delay incremet for `delay` iterations (default is 1, which means increment at every iteration)
-* `list`  - Use this specific list of values instead of the generated values. If this attribute is present `start`, `step`, `delay` must be ignored. `count` and `type` still will be used.
+* `list`  - Use this specific list of values instead of the generated values. If this attribute is present `start`, `step`, `delay` must be ignored. `count` still will be used.
 
 ### Sequence generator expresions examples:
 
 #### Integers
 
 ```
-{ count: 4, type: INT, start: 100, step: 10 } => 100, 110, 120, 130
-{ count: 4, type: INT, start: 100, step: 5 } => 100, 105, 110, 115
-{ count: 4, type: INT, start: 100, step: 10, delay: 2} => 100, 100, 105, 105
+{ count: 4, start: 100, step: 10 } => 100, 110, 120, 130
+{ count: 4, start: 100, step: 5 } => 100, 105, 110, 115
+{ count: 4, start: 100, step: 10, delay: 2} => 100, 100, 105, 105
 { count: 4, start: 100 } => 100, 101, 102, 103
 { start: 100 } => 100
 ```
@@ -48,45 +47,45 @@ For scaling purposes sequence generator could be used for creating big number of
 #### IP-addresses and IP-prefixes
 
 ```
-{ count: 4, type: IP, start: "10.0.0.1", step: "0.0.0.1" } => "10.0.0.1", "10.0.0.2", "10.0.0.3", "10.0.0.4"
-{ count: 4, type: IP, start: "10.0.0.1", step: "0.0.1.0" } => "10.0.0.1", "10.0.1.1", "10.0.2.1", "10.0.3.1"
-{ count: 4, type: IP, start: "10.0.0.1", step: "0.0.1.0", delay: 2 } => "10.0.0.1", "10.0.0.1", "10.0.1.1", "10.0.1.1"
-{ count: 4, type: IP, start: "10.0.0.1" } => "10.0.0.1", "10.0.0.2", "10.0.0.3", "10.0.0.4"
-{ type: IP, start: "10.0.0.1" } => "10.0.0.1"
+{ count: 4, start: "10.0.0.1", step: "0.0.0.1" } => "10.0.0.1", "10.0.0.2", "10.0.0.3", "10.0.0.4"
+{ count: 4, start: "10.0.0.1", step: "0.0.1.0" } => "10.0.0.1", "10.0.1.1", "10.0.2.1", "10.0.3.1"
+{ count: 4, start: "10.0.0.1", step: "0.0.1.0", delay: 2 } => "10.0.0.1", "10.0.0.1", "10.0.1.1", "10.0.1.1"
+{ count: 4, start: "10.0.0.1" } => "10.0.0.1", "10.0.0.2", "10.0.0.3", "10.0.0.4"
+{ start: "10.0.0.1" } => "10.0.0.1"
 
-{ count: 4, type: IP, start: "10.0.0.0/24", step: "0.0.1.0" } => "10.0.0.0/24", "10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"
-{ count: 4, type: IP, start: "10.0.0.0/24", step: "0.1.1.0" } => "10.0.0.0/24", "10.1.1.0/24", "10.2.2.0/24", "10.3.3.0/24"
-{ count: 4, type: IP, start: "10.0.0.0/24", step: "0.1.1.0", delay: 2 } => "10.0.0.0/24", "10.0.0.0/24", "10.2.2.0/24", "10.2.2.0/24"
-{ type: IP, start: "10.0.0.1/24" } => "10.0.0.1/24"
+{ count: 4, start: "10.0.0.0/24", step: "0.0.1.0" } => "10.0.0.0/24", "10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"
+{ count: 4, start: "10.0.0.0/24", step: "0.1.1.0" } => "10.0.0.0/24", "10.1.1.0/24", "10.2.2.0/24", "10.3.3.0/24"
+{ count: 4, start: "10.0.0.0/24", step: "0.1.1.0", delay: 2 } => "10.0.0.0/24", "10.0.0.0/24", "10.2.2.0/24", "10.2.2.0/24"
+{ start: "10.0.0.1/24" } => "10.0.0.1/24"
 ```
 
 #### MAC-addresses
 
 ```
-{ count: 4, type: MAC, start: "00:CC:CC:CC:CC:00", step: "00:00:00:00:00:01" } => "00:CC:CC:CC:CC:00", "00:CC:CC:CC:CC:01", "00:CC:CC:CC:CC:02", "00:CC:CC:CC:CC:03"
-{ count: 4, type: MAC, start: "00:CC:CC:CC:CC:00", step: "00:00:00:00:00:10" } => "00:CC:CC:CC:CC:00", "00:CC:CC:CC:CC:10", "00:CC:CC:CC:CC:20", "00:CC:CC:CC:CC:30"
-{ count: 4, type: MAC, start: "00:CC:CC:CC:CC:00", step: "00:00:00:00:00:10", delay: 2 } => "00:CC:CC:CC:CC:00", "00:CC:CC:CC:CC:00", "00:CC:CC:CC:CC:10", "00:CC:CC:CC:CC:10"
-{ count: 4, type: MAC, start: "00:CC:CC:CC:CC:00" } => "00:CC:CC:CC:CC:00", "00:CC:CC:CC:CC:01", "00:CC:CC:CC:CC:02", "00:CC:CC:CC:CC:03"
-{ type: MAC, start: "00:CC:CC:CC:CC:00" } => "00:CC:CC:CC:CC:00"
+{ count: 4, start: "00:CC:CC:CC:CC:00", step: "00:00:00:00:00:01" } => "00:CC:CC:CC:CC:00", "00:CC:CC:CC:CC:01", "00:CC:CC:CC:CC:02", "00:CC:CC:CC:CC:03"
+{ count: 4, start: "00:CC:CC:CC:CC:00", step: "00:00:00:00:00:10" } => "00:CC:CC:CC:CC:00", "00:CC:CC:CC:CC:10", "00:CC:CC:CC:CC:20", "00:CC:CC:CC:CC:30"
+{ count: 4, start: "00:CC:CC:CC:CC:00", step: "00:00:00:00:00:10", delay: 2 } => "00:CC:CC:CC:CC:00", "00:CC:CC:CC:CC:00", "00:CC:CC:CC:CC:10", "00:CC:CC:CC:CC:10"
+{ count: 4, start: "00:CC:CC:CC:CC:00" } => "00:CC:CC:CC:CC:00", "00:CC:CC:CC:CC:01", "00:CC:CC:CC:CC:02", "00:CC:CC:CC:CC:03"
+{ start: "00:CC:CC:CC:CC:00" } => "00:CC:CC:CC:CC:00"
 ```
 
 #### Object IDs
 
 ```
-{ count: 4, type: OID, start: "DASH_VNET#vnet#0", step: 1 } => "$DASH_VNET#vnet#0", "$DASH_VNET#vnet#1", "$DASH_VNET#vnet#2", "$DASH_VNET#vnet#3"
-{ count: 4, type: OID, start: "DASH_VNET#vnet#0", step: 2 } => "$DASH_VNET#vnet#0", "$DASH_VNET#vnet#2", "$DASH_VNET#vnet#4", "$DASH_VNET#vnet#6"
-{ count: 4, type: OID, start: "DASH_VNET#vnet#0", step: 2, delay: 2} => "$DASH_VNET#vnet#0", "$DASH_VNET#vnet#0", "$DASH_VNET#vnet#2", "$DASH_VNET#vnet#2"
-{ count: 4, type: OID, start: "DASH_VNET#vnet#0"} => "$DASH_VNET#vnet#0", "$DASH_VNET#vnet#1", "$DASH_VNET#vnet#2", "$DASH_VNET#vnet#3"
-{ type: OID, start: "DASH_VNET#vnet#0"} => "$DASH_VNET#vnet#0"
+{ count: 4, start: "DASH_VNET#vnet#0", step: 1 } => "$DASH_VNET#vnet#0", "$DASH_VNET#vnet#1", "$DASH_VNET#vnet#2", "$DASH_VNET#vnet#3"
+{ count: 4, start: "DASH_VNET#vnet#0", step: 2 } => "$DASH_VNET#vnet#0", "$DASH_VNET#vnet#2", "$DASH_VNET#vnet#4", "$DASH_VNET#vnet#6"
+{ count: 4, start: "DASH_VNET#vnet#0", step: 2, delay: 2} => "$DASH_VNET#vnet#0", "$DASH_VNET#vnet#0", "$DASH_VNET#vnet#2", "$DASH_VNET#vnet#2"
+{ count: 4, start: "DASH_VNET#vnet#0"} => "$DASH_VNET#vnet#0", "$DASH_VNET#vnet#1", "$DASH_VNET#vnet#2", "$DASH_VNET#vnet#3"
+{ start: "DASH_VNET#vnet#0"} => "$DASH_VNET#vnet#0"
 ```
 
 #### Lists
 
 ```
-{ count: 4, type: INT, start: 100, step: 10, list: [3, 5, 7, 9] } => 3, 5, 7, 9
-{ count: 4, type: INT, list: [3, 5, 7, 9] } => 3, 5, 7, 9
-{ count: 2, type: INT, list: [3, 5, 7, 9] } => 3, 5
-{ count: 6, type: INT, list: [3, 5, 7, 9] } => 3, 5, 7, 9, 3, 5
+{ count: 4, start: 100, step: 10, list: [3, 5, 7, 9] } => 3, 5, 7, 9
+{ count: 4, list: [3, 5, 7, 9] } => 3, 5, 7, 9
+{ count: 2, list: [3, 5, 7, 9] } => 3, 5
+{ count: 6, list: [3, 5, 7, 9] } => 3, 5, 7, 9, 3, 5
 ```
 
 # Example of generator output using scale configuration
@@ -104,10 +103,10 @@ NUMBER_OF_VNET: 10
 DASH_OUTBOUND_ROUTING:
     ore: NUMBER_OF_ORE
         SWITCH_ID: $SWITCH_ID
-        ENI_ID: { count: NUMBER_OF_ENI, type: OID, start: "DASH_ENI#eni#0", delay: NUMBER_OF_DST }
-        DESTINATION: { count: NUMBER_OF_DST, type: IP, start: "10.1.0.0/24", step: "0.0.1.0" }
+        ENI_ID: { count: NUMBER_OF_ENI, start: "DASH_ENI#eni#0", delay: NUMBER_OF_DST }
+        DESTINATION: { count: NUMBER_OF_DST, start: "10.1.0.0/24", step: "0.0.1.0" }
         ACTION: ROUTE_VNET
-        DST_VNET_ID: { count: NUMBER_OF_VNET, type: OID, start: "DASH_VNET#vnet#0" }
+        DST_VNET_ID: { count: NUMBER_OF_VNET, start: "DASH_VNET#vnet#0" }
 ```
 
 ### Output:
@@ -202,7 +201,7 @@ NUMBER_OF_OCPE: 5
 DASH_VIP:
     vpe: NUMBER_OF_VIP
         SWITCH_ID: $SWITCH_ID
-        IPv4: { count: NUMBER_OF_VIP, type: IP, start: "172.1.0.100", step: "0.1.0.0" }
+        IPv4: { count: NUMBER_OF_VIP, start: "172.1.0.100", step: "0.1.0.0" }
 
 DASH_DIRECTION_LOOKUP:
     dle: NUMBER_OF_DLE
@@ -224,11 +223,11 @@ DASH_ENI:
     eni: NUMBER_OF_ENI
         ACL_GROUP:
             INBOUND:
-                STAGE1: { type: OID, list: "DASH_ACL_GROUP#in_acl_group_id#0" }
-                STAGE2: { type: OID, list: "DASH_ACL_GROUP#in_acl_group_id#0" }
-                STAGE3: { type: OID, list: "DASH_ACL_GROUP#in_acl_group_id#0" }
-                STAGE4: { type: OID, list: "DASH_ACL_GROUP#in_acl_group_id#0" }
-                STAGE5: { type: OID, list: "DASH_ACL_GROUP#in_acl_group_id#0" }
+                STAGE1: { list: "DASH_ACL_GROUP#in_acl_group_id#0" }
+                STAGE2: { list: "DASH_ACL_GROUP#in_acl_group_id#0" }
+                STAGE3: { list: "DASH_ACL_GROUP#in_acl_group_id#0" }
+                STAGE4: { list: "DASH_ACL_GROUP#in_acl_group_id#0" }
+                STAGE5: { list: "DASH_ACL_GROUP#in_acl_group_id#0" }
             OUTBOUND:
                 STAGE1: 0
                 STAGE2: 0
@@ -239,31 +238,31 @@ DASH_ENI:
         CPS: 10000
         FLOWS: 10000
         PPS: 100000
-        VM_UNDERLAY_DIP: { count: NUMBER_OF_ENI, type: IP, start: "172.16.1.0", step: "0.0.1.0" }
+        VM_UNDERLAY_DIP: { count: NUMBER_OF_ENI, start: "172.16.1.0", step: "0.0.1.0" }
         VM_VNI: { count: NUMBER_OF_ENI, start: 50 }
-        VNET_ID: { count: NUMBER_OF_ENI, type: OID, start: "DASH_VNET#vnet#0" }
+        VNET_ID: { count: NUMBER_OF_ENI, start: "DASH_VNET#vnet#0" }
 
 DASH_ENI_ETHER_ADDRESS_MAP:
     eam: NUMBER_OF_EAM
         SWITCH_ID: $SWITCH_ID
-        MAC: { count: NUMBER_OF_EAM, type: MAC: start: "00:CC:CC:CC:00:00" }
-        ENI_ID: { count: NUMBER_OF_ENI, type: OID, start: "DASH_ENI#eni#0" }
+        MAC: { count: NUMBER_OF_EAM, start: "00:CC:CC:CC:00:00" }
+        ENI_ID: { count: NUMBER_OF_ENI, start: "DASH_ENI#eni#0" }
 
 DASH_OUTBOUND_ROUTING:
     ore: NUMBER_OF_ORE
         SWITCH_ID: $SWITCH_ID
-        ENI_ID: { count: NUMBER_OF_ENI, type: OID, start: "DASH_ENI#eni#0", delay: NUMBER_OF_DST }
-        DESTINATION: { count: NUMBER_OF_DST, type: IP, start: "10.1.0.0/24", step: "0.0.1.0" }
+        ENI_ID: { count: NUMBER_OF_ENI, start: "DASH_ENI#eni#0", delay: NUMBER_OF_DST }
+        DESTINATION: { count: NUMBER_OF_DST, start: "10.1.0.0/24", step: "0.0.1.0" }
         ACTION: ROUTE_VNET
-        DST_VNET_ID: { count: NUMBER_OF_VNET, type: OID, start: "DASH_VNET#vnet#0" }
+        DST_VNET_ID: { count: NUMBER_OF_VNET, start: "DASH_VNET#vnet#0" }
 
 DASH_OUTBOUND_CA_TO_PA:
     ocpe: NUMBER_OF_OCPE
         SWITCH_ID: $SWITCH_ID
-        DST_VNET_ID:  { count: NUMBER_OF_VNET, type: OID, start: "DASH_VNET#vnet#0" }
-        DIP: { count: NUMBER_OF_OCPE, type: IP, start: "10.1.2.50", step: "0.0.1.0" }
-        UNDERLAY_DIP: { count: NUMBER_OF_OCPE, type: IP, start: "172.16.1.20", step: "0.0.1.0" }
-        OVERLAY_DMAC: { count: NUMBER_OF_OCPE, type: MAC: start: "00:DD:DD:DD:00:00" }
+        DST_VNET_ID:  { count: NUMBER_OF_VNET, start: "DASH_VNET#vnet#0" }
+        DIP: { count: NUMBER_OF_OCPE, start: "10.1.2.50", step: "0.0.1.0" }
+        UNDERLAY_DIP: { count: NUMBER_OF_OCPE, start: "172.16.1.20", step: "0.0.1.0" }
+        OVERLAY_DMAC: { count: NUMBER_OF_OCPE, start: "00:DD:DD:DD:00:00" }
         USE_DST_VNET_VNI: True
 ```
 
