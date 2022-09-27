@@ -267,3 +267,90 @@ DASH_OUTBOUND_CA_TO_PA:
         USE_DST_VNET_VNI: True
 ```
 
+# Generator output format
+Config generator generates a list of commands that should be applied to SAI. These commands consist of the following fields:
+- `op` - operation. (mandatory)
+- `type` - object type. See *sai_object_type_t*. (mandatory when op is "create" or "bulk_create")
+- `name` - name of the object. (mandatory when "op" is "remove", "bulk_remove" or "set")
+- `key` - key of the specific object. Not all objects have key. See SAI headers for more information. (mandatory for some object types)
+- `attributes` - a list of attributes and their values. See SAI headers for more information. (optional)
+
+Possible operations (`op`):
+- create
+- remove
+- get *(currently not supported)*
+- set *(currently not supported)*
+- bulk_create *(currently not supported)*
+- bulk_remove *(currently not supported)*
+
+If `op` is "bulk_create" or "bulk_remove" SAI expects `name` and `key` to be lists of values and `attributes` to be a list of lists.
+
+If you need to refer to some object in `attributes` or `key` you should use its name with a '$' sign at the beginning. Example: "$vnet".
+
+## Examples
+
+Create an object without a key:
+
+```
+  {
+    "op": "create",
+    "type": "SAI_OBJECT_TYPE_VNET",
+    "name": "vnet",
+    "attributes": [
+      "SAI_VNET_ATTR_VNI", "100"
+    ]
+  }
+```
+
+Create an object with key:
+
+```
+  {
+    "op": "create",
+    "type": "SAI_OBJECT_TYPE_VIP_ENTRY",
+    "name": "vpe",
+    "key": {
+      "switch_id": "$SWITCH_ID",
+      "vip": "172.16.1.100"
+    },
+    "attributes": [
+      "SAI_VIP_ENTRY_ATTR_ACTION", "SAI_VIP_ENTRY_ACTION_ACCEPT"
+    ]
+  }
+```
+
+Remove object:
+```
+  {
+    "name": "vnet",
+    "op": "remove"
+  }
+```
+
+Bulk create:
+```
+  {
+    "op": "bulk_create",
+    "type": "SAI_OBJECT_TYPE_VIP_ENTRY",
+    "name": [ "vpe#0", "vpe#1" ],
+    "key": [
+      { "switch_id": "$SWITCH_ID",
+        "vip": "172.16.1.100" },
+      { "switch_id": "$SWITCH_ID",
+        "vip": "172.16.1.200" }
+    ],
+    "attributes": [
+      [ "SAI_VIP_ENTRY_ATTR_ACTION", "SAI_VIP_ENTRY_ACTION_ACCEPT" ],
+      [ "SAI_VIP_ENTRY_ATTR_ACTION", "SAI_VIP_ENTRY_ACTION_ACCEPT" ]
+    ]
+  }
+```
+
+Bulk remove:
+```
+  {
+    "name": [ "vpe#0", "vpe#1" ],
+    "op": "bulk_remove"
+  }
+```
+
