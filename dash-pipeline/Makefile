@@ -11,7 +11,7 @@ run-saithrift-client-dev-tests: run-saithrift-dev-ptftests run-saithrift-dev-pyt
 clean: kill-all p4-clean sai-clean test-clean network-clean saithrift-server-clean
 	rm -rf $(P4_OUTDIR)
 
-kill-all: kill-saithrift-server kill-switch undeploy-ixiac kill-saic-client
+kill-all: kill-saithrift-server kill-switch undeploy-ixiac
 
 PWD := $(shell pwd)
 DASH_USER ?=dashuser

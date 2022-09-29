@@ -14,16 +14,16 @@ from saichallenger.dataplane.ptf_testutils import (send_packet,
 current_file_dir = Path(__file__).parent
 
 # Constants for scale outbound
-NUMBER_OF_VIP = 3
-NUMBER_OF_DLE = 3
+NUMBER_OF_VIP = 2
+NUMBER_OF_DLE = 2
 NUMBER_OF_IN_ACL_GROUP = 10
 NUMBER_OF_OUT_ACL_GROUP = 10
-NUMBER_OF_VNET = 50
+NUMBER_OF_VNET = 2
 NUMBER_OF_ENI = 10
 NUMBER_OF_EAM = NUMBER_OF_ENI * 2
 NUMBER_OF_ORE = 5
 NUMBER_OF_DST = 10
-NUMBER_OF_OCPE = 5
+NUMBER_OF_OCPE = 1
 
 TEST_VNET_OUTBOUND_CONFIG_SCALE = {
 
@@ -33,8 +33,7 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             'SWITCH_ID': '$SWITCH_ID',
             'IPV4': {
                 'count': NUMBER_OF_VIP,
-                'type': 'IP',
-                'start': '172.1.0.100',
+                'start': '172.16.1.100',
                 'step': '0.1.0.0'
             }
         }
@@ -70,7 +69,7 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             'VNI': {
                 'count': NUMBER_OF_VNET,
                 'start': 1000,
-                'step': 10
+                'step': 1000
             }
         }
     },
@@ -81,23 +80,18 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             'ACL_GROUP': {
                 'INBOUND': {
                     'STAGE1': {
-                        'type': 'OID',
                         'list': 'DASH_ACL_GROUP#in_acl_group_id#0'
                     },
                     'STAGE2': {
-                        'type': 'OID',
                         'list': 'DASH_ACL_GROUP#in_acl_group_id#0'
                     },
                     'STAGE3': {
-                        'type': 'OID',
                         'list': 'DASH_ACL_GROUP#in_acl_group_id#0'
                     },
                     'STAGE4': {
-                        'type': 'OID',
                         'list': 'DASH_ACL_GROUP#in_acl_group_id#0'
                     },
                     'STAGE5': {
-                        'type': 'OID',
                         'list': 'DASH_ACL_GROUP#in_acl_group_id#0'
                     }
                 },
@@ -115,17 +109,15 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             'PPS': 100000,
             'VM_UNDERLAY_DIP': {
                 'count': NUMBER_OF_ENI,
-                'type': 'IP',
-                'start': '172.16.1.0',
+                'start': '172.16.1.1',
                 'step': '0.0.1.0'
             },
             'VM_VNI': {
                 'count': NUMBER_OF_ENI,
-                'start': 50
+                'start': 9
             },
             'VNET_ID': {
                 'count': NUMBER_OF_ENI,
-                'type': 'OID',
                 'start': 'DASH_VNET#vnet#0'
             }
         }
@@ -137,12 +129,10 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             'SWITCH_ID': '$SWITCH_ID',
             'MAC': {
                 'count': NUMBER_OF_EAM,
-                'type': 'MAC',
                 'start': '00:CC:CC:CC:00:00'
             },
             'ENI_ID': {
                 'count': NUMBER_OF_ENI,
-                'type': 'OID',
                 'start': 'DASH_ENI#eni#0'
             }
         }
@@ -154,20 +144,17 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             'SWITCH_ID': '$SWITCH_ID',
             'ENI_ID': {
                 'count': NUMBER_OF_ENI,
-                'type': 'OID',
                 'start': 'DASH_ENI#eni#0',
                 'delay': NUMBER_OF_DST
             },
             'DESTINATION': {
                 'count': NUMBER_OF_DST,
-                'type': 'IP',
-                'start': '10.1.0.0/24',
+                'start': '10.1.0.0/16',
                 'step': '0.0.1.0'
             },
             'ACTION': 'ROUTE_VNET',
             'DST_VNET_ID': {
                 'count': NUMBER_OF_VNET,
-                'type': 'OID',
                 'start': 'DASH_VNET#vnet#0'
             }
         }
@@ -179,24 +166,20 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             'SWITCH_ID': '$SWITCH_ID',
             'DST_VNET_ID': {
                 'count': NUMBER_OF_VNET,
-                'type': 'OID',
                 'start': 'DASH_VNET#vnet#0'
             },
             'DIP': {
                 'count': NUMBER_OF_OCPE,
-                'type': 'IP',
                 'start': '10.1.2.50',
                 'step': '0.0.1.0'
             },
             'UNDERLAY_DIP': {
                 'count': NUMBER_OF_OCPE,
-                'type': 'IP',
                 'start': '172.16.1.20',
                 'step': '0.0.1.0'
             },
             'OVERLAY_DMAC': {
                 'count': NUMBER_OF_OCPE,
-                'type': 'MAC',
                 'start': '00:DD:DD:DD:00:00'
             },
             'USE_DST_VNET_VNI': True
@@ -222,7 +205,19 @@ class TestSaiVnetOutbound:
 
     @pytest.mark.skip
     def test_run_traffic_check(self, dpu, dataplane):
-        pass
+        # tmp vars for test
+        api = dataplane.api
+        cfg = dataplane.configuration
+
+        dataplane.preapare_vxlan_packets(TEST_VNET_OUTBOUND_CONFIG_SCALE)
+
+        dataplane.set_config()
+        dataplane.start_traffic()
+
+        print("\nExpected\tTotal Tx\tTotal Rx")
+        wait_for(lambda: metrics_ok(api, cfg)), "Metrics validation failed!"
+
+        print("Test passed !")
 
     @pytest.mark.skip
     def test_remove_vnet_config(self, confgen, dpu, dataplane):
@@ -240,3 +235,41 @@ class TestSaiVnetOutbound:
         result = [*dpu.process_commands(cleanup_commands)]
         print("\n======= SAI commands RETURN values =======")
         pprint(result)
+
+
+# Temporary func
+def wait_for(func, timeout=3, interval=0.2):
+    """
+    Keeps calling the `func` until it returns true or `timeout` occurs
+    every `interval` seconds.
+    """
+
+    start = time.time()
+
+    while time.time() - start <= timeout:
+        if func():
+            return True
+        time.sleep(interval)
+
+    print("Timeout occurred !")
+    return False
+
+# Temporary func
+def metrics_ok(api, cfg):
+    # create a port metrics request and filter based on port names
+    req = api.metrics_request()
+    req.port.port_names = [p.name for p in cfg.ports]
+    # include only sent and received packet counts
+    req.port.column_names = [req.port.FRAMES_TX, req.port.FRAMES_RX]
+
+    # fetch port metrics
+    res = api.get_metrics(req)
+    # calculate total frames sent and received across all configured ports
+    total_tx = sum([m.frames_tx for m in res.port_metrics])
+    total_rx = sum([m.frames_rx for m in res.port_metrics])
+    expected = sum([f.duration.fixed_packets.packets for f in cfg.flows])
+    expected = 600
+
+    print("%d\t\t%d\t\t%d" % (expected, total_tx, total_rx))
+
+    return expected == total_tx and total_rx >= expected
