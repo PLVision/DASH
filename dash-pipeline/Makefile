@@ -523,7 +523,7 @@ endif
 docker-saic-client:
 	cd $(SAI_CHALLENGER_PATH) && ./build.sh -i client
 	docker build \
-		-f dockerfiles/Dockerfile.saic-saithrift-client \
+		-f dockerfiles/Dockerfile.saic-client \
 		-t $(DOCKER_SAI_CHALLENGER_CLIENT) \
 		.
 
