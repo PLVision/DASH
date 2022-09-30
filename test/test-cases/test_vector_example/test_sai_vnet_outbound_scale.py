@@ -3,6 +3,7 @@ from pathlib import Path
 from pprint import pprint
 
 import snappi
+import time
 
 import pytest
 from saichallenger.dataplane.ptf_testutils import (send_packet,
@@ -189,21 +190,21 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
 
 class TestSaiVnetOutbound:
 
-    @pytest.mark.skip
+    # @pytest.mark.skip
     def test_create_vnet_config(self, confgen, dpu, dataplane):
 
         confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG_SCALE)
         confgen.generate()
-        for item in confgen.items():
-            pprint(item)
+        # for item in confgen.items():
+        #     pprint(item)
 
         with (current_file_dir / 'test_vnet_outbound_setup_commands_scale.json').open(mode='r') as config_file:
             setup_commands = json.load(config_file)
         result = [*dpu.process_commands(setup_commands)]
         print("\n======= SAI commands RETURN values =======")
-        pprint(result)
+        # pprint(result)
 
-    @pytest.mark.skip
+    # @pytest.mark.skip
     def test_run_traffic_check(self, dpu, dataplane):
         # tmp vars for test
         api = dataplane.api
@@ -219,7 +220,7 @@ class TestSaiVnetOutbound:
 
         print("Test passed !")
 
-    @pytest.mark.skip
+    # @pytest.mark.skip
     def test_remove_vnet_config(self, confgen, dpu, dataplane):
 
         confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG_SCALE)
@@ -227,14 +228,14 @@ class TestSaiVnetOutbound:
 
         for item in confgen.items():
             item['OP'] = 'remove'
-            pprint(item)
+            # pprint(item)
 
         with (current_file_dir / 'test_vnet_outbound_cleanup_commands_scale.json').open(mode='r') as config_file:
             cleanup_commands = json.load(config_file)
 
         result = [*dpu.process_commands(cleanup_commands)]
         print("\n======= SAI commands RETURN values =======")
-        pprint(result)
+        # pprint(result)
 
 
 # Temporary func
