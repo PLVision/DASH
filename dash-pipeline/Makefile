@@ -553,6 +553,13 @@ run-saic-tests: deploy-ixiac
 	$(DOCKER_SAI_CHALLENGER_CLIENT) \
 	./run_vnet_tests.sh --setup=$(SAI_CHALLENGER_SETUP_FILE) $(SAI_CHALLENGER_TEST)
 
+run-saic-client-bash: deploy-ixiac
+	$(DOCKER_RUN_SAI_CHALLENGER_CLEINT) \
+	-w /sai-challenger/tests \
+	$(DOCKER_FLAGS) \
+	$(DOCKER_SAI_CHALLENGER_CLIENT) \
+	/bin/bash
+
 ###############################
 # ENVIRONMENT SETUP TARGETS
 ###############################

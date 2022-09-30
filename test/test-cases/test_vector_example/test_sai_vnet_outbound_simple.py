@@ -19,6 +19,13 @@ SWITCH_ID = 5
 
 TEST_VNET_OUTBOUND_CONFIG = {
 
+    "ENI_COUNT": 1,
+    "ACL_RULES_NSG": 1,
+    "ACL_TABLE_COUNT": 1,
+    "IP_PER_ACL_RULE": 1,
+    "IP_MAPPED_PER_ACL_RULE": 1,
+    "IP_ROUTE_DIVIDER_PER_ACL_RULE": 1,
+
     'DASH_VIP': {
         'vpe': {
             'SWITCH_ID': '$SWITCH_ID',
@@ -114,14 +121,16 @@ class TestSaiVnetOutbound:
 
         confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG)
         confgen.generate()
+        # result = []
         # for item in confgen.items():
         #     pprint(item)
+        #     result += [dpu.command_processor.process_command(item)]
 
         with (current_file_dir / 'test_vnet_outbound_setup_commands_simple.json').open(mode='r') as config_file:
             setup_commands = json.load(config_file)
         result = [*dpu.process_commands(setup_commands)]
         print("\n======= SAI commands RETURN values =======")
-        # pprint(result)
+        pprint(result)
 
     # @pytest.mark.skip
     def test_simple_vxlan_packet(self, dpu, dataplane):
@@ -154,7 +163,7 @@ class TestSaiVnetOutbound:
 
         result = [*dpu.process_commands(cleanup_commands)]
         print("\n======= SAI commands RETURN values =======")
-        # pprint(result)
+        pprint(result)
 
 # Temporary func
 def wait_for(func, timeout=3, interval=0.2):
