@@ -11,6 +11,7 @@ from saichallenger.dataplane.ptf_testutils import (send_packet,
                                                    simple_vxlan_packet,
                                                    verify_packet,
                                                    verify_no_other_packets)
+import saichallenger.dataplane.snappi_trafic_utils as stu
 
 current_file_dir = Path(__file__).parent
 
@@ -193,8 +194,8 @@ class TestSaiVnetOutbound:
     # @pytest.mark.skip
     def test_create_vnet_config(self, confgen, dpu, dataplane):
 
-        confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG_SCALE)
-        confgen.generate()
+        # confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG_SCALE)
+        # confgen.generate()
         # for item in confgen.items():
         #     pprint(item)
 
@@ -206,29 +207,24 @@ class TestSaiVnetOutbound:
 
     # @pytest.mark.skip
     def test_run_traffic_check(self, dpu, dataplane):
-        # tmp vars for test
-        api = dataplane.api
-        cfg = dataplane.configuration
-
         dataplane.preapare_vxlan_packets(TEST_VNET_OUTBOUND_CONFIG_SCALE)
 
         dataplane.set_config()
         dataplane.start_traffic()
 
-        print("\nExpected\tTotal Tx\tTotal Rx")
-        wait_for(lambda: metrics_ok(api, cfg)), "Metrics validation failed!"
+        stu.wait_for(lambda: dataplane.check_flows_all_packets_metrics(dataplane.flows, name="Custom flow group", show=True), "Test", timeout_seconds=10)
 
         print("Test passed !")
 
     # @pytest.mark.skip
     def test_remove_vnet_config(self, confgen, dpu, dataplane):
 
-        confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG_SCALE)
-        confgen.generate()
+        # confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG_SCALE)
+        # confgen.generate()
 
-        for item in confgen.items():
-            item['OP'] = 'remove'
-            # pprint(item)
+        # for item in confgen.items():
+        #     item['OP'] = 'remove'
+        #     pprint(item)
 
         with (current_file_dir / 'test_vnet_outbound_cleanup_commands_scale.json').open(mode='r') as config_file:
             cleanup_commands = json.load(config_file)
@@ -236,41 +232,3 @@ class TestSaiVnetOutbound:
         result = [*dpu.process_commands(cleanup_commands)]
         print("\n======= SAI commands RETURN values =======")
         # pprint(result)
-
-
-# Temporary func
-def wait_for(func, timeout=3, interval=0.2):
-    """
-    Keeps calling the `func` until it returns true or `timeout` occurs
-    every `interval` seconds.
-    """
-
-    start = time.time()
-
-    while time.time() - start <= timeout:
-        if func():
-            return True
-        time.sleep(interval)
-
-    print("Timeout occurred !")
-    return False
-
-# Temporary func
-def metrics_ok(api, cfg):
-    # create a port metrics request and filter based on port names
-    req = api.metrics_request()
-    req.port.port_names = [p.name for p in cfg.ports]
-    # include only sent and received packet counts
-    req.port.column_names = [req.port.FRAMES_TX, req.port.FRAMES_RX]
-
-    # fetch port metrics
-    res = api.get_metrics(req)
-    # calculate total frames sent and received across all configured ports
-    total_tx = sum([m.frames_tx for m in res.port_metrics])
-    total_rx = sum([m.frames_rx for m in res.port_metrics])
-    expected = sum([f.duration.fixed_packets.packets for f in cfg.flows])
-    expected = 600
-
-    print("%d\t\t%d\t\t%d" % (expected, total_tx, total_rx))
-
-    return expected == total_tx and total_rx >= expected
