@@ -22,7 +22,7 @@ NUMBER_OF_IN_ACL_GROUP = 10
 NUMBER_OF_OUT_ACL_GROUP = 10
 NUMBER_OF_VNET = 1
 NUMBER_OF_ENI = 2
-NUMBER_OF_EAM = NUMBER_OF_ENI * 2
+NUMBER_OF_EAM = NUMBER_OF_ENI
 NUMBER_OF_ORE = 4
 NUMBER_OF_DST = 10
 NUMBER_OF_OCPE = 4
@@ -131,7 +131,8 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             'SWITCH_ID': '$SWITCH_ID',
             'MAC': {
                 'count': NUMBER_OF_EAM,
-                'start': '00:CC:CC:CC:00:00'
+                'start': '00:CC:CC:CC:00:00',
+                'step': "00:00:00:00:00:01"
             },
             'ENI_ID': {
                 'count': NUMBER_OF_ENI,
@@ -204,16 +205,18 @@ class TestSaiVnetOutbound:
         result = [*dpu.process_commands(setup_commands)]
         print("\n======= SAI commands RETURN values =======")
         # pprint(result)
+        for cmd, res in zip(setup_commands, result):
+            print(cmd['name'], cmd['type'], res)
 
     # @pytest.mark.skip
     def test_run_traffic_check(self, dpu, dataplane):
-        dataplane.preapare_vxlan_packets(TEST_VNET_OUTBOUND_CONFIG_SCALE)
-
+        dataplane.prepare_vxlan_packets(TEST_VNET_OUTBOUND_CONFIG_SCALE)
         dataplane.set_config()
         dataplane.start_traffic()
 
-        stu.wait_for(lambda: dataplane.check_flows_all_packets_metrics(dataplane.flows, name="Custom flow group", show=True)[0], "Test", timeout_seconds=10)
-
+        stu.wait_for(lambda: dataplane.check_flows_all_packets_metrics(dataplane.flows,
+                                                                       name="Custom flow group", show=True)[0],
+                    "Test", timeout_seconds=15)
         print("Test passed !")
 
     # @pytest.mark.skip
@@ -232,3 +235,5 @@ class TestSaiVnetOutbound:
         result = [*dpu.process_commands(cleanup_commands)]
         print("\n======= SAI commands RETURN values =======")
         # pprint(result)
+        for cmd, res in zip(cleanup_commands, result):
+            print(cmd['name'], res)

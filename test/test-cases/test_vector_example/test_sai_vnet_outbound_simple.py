@@ -136,7 +136,7 @@ class TestSaiVnetOutbound:
 
     # @pytest.mark.skip
     def test_simple_vxlan_packet(self, dpu, dataplane):
-        dataplane.preapare_vxlan_packets(TEST_VNET_OUTBOUND_CONFIG)
+        dataplane.prepare_vxlan_packets(TEST_VNET_OUTBOUND_CONFIG)
 
         dataplane.set_config()
         dataplane.start_traffic()
