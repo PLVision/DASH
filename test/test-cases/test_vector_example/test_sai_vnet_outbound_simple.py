@@ -141,7 +141,7 @@ class TestSaiVnetOutbound:
         dataplane.set_config()
         dataplane.start_traffic()
 
-        stu.wait_for(lambda: dataplane.check_flow_packets_metrics(dataplane.flows[0], show=True), "Test", timeout_seconds=10)
+        stu.wait_for(lambda: dataplane.check_flow_packets_metrics(dataplane.flows[0], show=True)[0], "Test", timeout_seconds=10)
 
         print("Test passed !")
 

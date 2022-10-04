@@ -20,12 +20,12 @@ NUMBER_OF_VIP = 2
 NUMBER_OF_DLE = 2
 NUMBER_OF_IN_ACL_GROUP = 10
 NUMBER_OF_OUT_ACL_GROUP = 10
-NUMBER_OF_VNET = 2
-NUMBER_OF_ENI = 10
+NUMBER_OF_VNET = 1
+NUMBER_OF_ENI = 2
 NUMBER_OF_EAM = NUMBER_OF_ENI * 2
-NUMBER_OF_ORE = 5
+NUMBER_OF_ORE = 4
 NUMBER_OF_DST = 10
-NUMBER_OF_OCPE = 1
+NUMBER_OF_OCPE = 4
 
 TEST_VNET_OUTBOUND_CONFIG_SCALE = {
 
@@ -212,7 +212,7 @@ class TestSaiVnetOutbound:
         dataplane.set_config()
         dataplane.start_traffic()
 
-        stu.wait_for(lambda: dataplane.check_flows_all_packets_metrics(dataplane.flows, name="Custom flow group", show=True), "Test", timeout_seconds=10)
+        stu.wait_for(lambda: dataplane.check_flows_all_packets_metrics(dataplane.flows, name="Custom flow group", show=True)[0], "Test", timeout_seconds=10)
 
         print("Test passed !")
 
