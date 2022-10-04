@@ -7,8 +7,6 @@
   { "name": "ore#2", "op": "remove" },
   { "name": "ore#1", "op": "remove" },
   { "name": "ore#0", "op": "remove" },
-  { "name": "eam#3", "op": "remove" },
-  { "name": "eam#2", "op": "remove" },
   { "name": "eam#1", "op": "remove" },
   { "name": "eam#0", "op": "remove" },
   { "name": "eni#1", "op": "remove" },

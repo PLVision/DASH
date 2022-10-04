@@ -18,14 +18,13 @@ current_file_dir = Path(__file__).parent
 # Constants for scale outbound
 NUMBER_OF_VIP = 2
 NUMBER_OF_DLE = 2
+NUMBER_OF_ENI = 2
+NUMBER_OF_VNET = 2  # So far per ORE, but may be different
+NUMBER_OF_EAM = NUMBER_OF_ENI
+NUMBER_OF_ORE = 6  # Per ENI
+NUMBER_OF_OCPE = 2  # Per ORE
 NUMBER_OF_IN_ACL_GROUP = 10
 NUMBER_OF_OUT_ACL_GROUP = 10
-NUMBER_OF_VNET = 1
-NUMBER_OF_ENI = 2
-NUMBER_OF_EAM = NUMBER_OF_ENI
-NUMBER_OF_ORE = 4
-NUMBER_OF_DST = 10
-NUMBER_OF_OCPE = 4
 
 TEST_VNET_OUTBOUND_CONFIG_SCALE = {
 
@@ -67,7 +66,6 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
 
     'DASH_VNET': {
         'vnet': {
-            'count': NUMBER_OF_VNET,
             'VNI': {
                 'count': NUMBER_OF_VNET,
                 'start': 1000,
@@ -143,46 +141,48 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
 
     'DASH_OUTBOUND_ROUTING': {
         'ore': {
-            'count': NUMBER_OF_ORE,
+            'count': NUMBER_OF_ENI * NUMBER_OF_ORE,  # Full count: OREs per ENI and VNET
             'SWITCH_ID': '$SWITCH_ID',
+            'ACTION': 'ROUTE_VNET',
+            'DESTINATION': {
+                'count': NUMBER_OF_ORE,
+                'start': '10.1.2.0/24',
+                'step': '0.0.1.0'
+            },
             'ENI_ID': {
                 'count': NUMBER_OF_ENI,
                 'start': 'DASH_ENI#eni#0',
-                'delay': NUMBER_OF_DST
+                'delay': NUMBER_OF_ORE
             },
-            'DESTINATION': {
-                'count': NUMBER_OF_DST,
-                'start': '10.1.0.0/16',
-                'step': '0.0.1.0'
-            },
-            'ACTION': 'ROUTE_VNET',
             'DST_VNET_ID': {
                 'count': NUMBER_OF_VNET,
-                'start': 'DASH_VNET#vnet#0'
+                'start': 'DASH_VNET#vnet#0',
+                'delay': NUMBER_OF_ORE
             }
         }
     },
 
     'DASH_OUTBOUND_CA_TO_PA': {
         'ocpe': {
-            'count': NUMBER_OF_OCPE,
+            'count': (NUMBER_OF_ENI * NUMBER_OF_ORE) * NUMBER_OF_OCPE,  # 1 Per ORE
             'SWITCH_ID': '$SWITCH_ID',
-            'DST_VNET_ID': {
-                'count': NUMBER_OF_VNET,
-                'start': 'DASH_VNET#vnet#0'
-            },
             'DIP': {
-                'count': NUMBER_OF_OCPE,
+                'count': NUMBER_OF_ORE,
                 'start': '10.1.2.50',
                 'step': '0.0.1.0'
             },
+            'DST_VNET_ID': {
+                'count': NUMBER_OF_VNET,
+                'start': 'DASH_VNET#vnet#0',
+                'delay': NUMBER_OF_ORE
+            },
             'UNDERLAY_DIP': {
-                'count': NUMBER_OF_OCPE,
+                'count': NUMBER_OF_ENI * NUMBER_OF_ORE,
                 'start': '172.16.1.20',
                 'step': '0.0.1.0'
             },
             'OVERLAY_DMAC': {
-                'count': NUMBER_OF_OCPE,
+                'count': NUMBER_OF_ENI * NUMBER_OF_ORE,
                 'start': '00:DD:DD:DD:00:00'
             },
             'USE_DST_VNET_VNI': True
@@ -216,7 +216,7 @@ class TestSaiVnetOutbound:
 
         stu.wait_for(lambda: dataplane.check_flows_all_packets_metrics(dataplane.flows,
                                                                        name="Custom flow group", show=True)[0],
-                    "Test", timeout_seconds=15)
+                    "Test", timeout_seconds=10)
         print("Test passed !")
 
     # @pytest.mark.skip
