@@ -118,7 +118,6 @@ TEST_VNET_OUTBOUND_CONFIG = {
 
 class TestSaiVnetOutbound:
 
-    # @pytest.mark.skip
     def test_create_vnet_config(self, confgen, dpu, dataplane):
 
         # confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG)
@@ -134,18 +133,18 @@ class TestSaiVnetOutbound:
         print("\n======= SAI commands RETURN values =======")
         pprint(result)
 
-    # @pytest.mark.skip
+    @pytest.mark.snappi
     def test_simple_vxlan_packet(self, dpu, dataplane):
         dataplane.prepare_vxlan_packets(TEST_VNET_OUTBOUND_CONFIG)
 
         dataplane.set_config()
         dataplane.start_traffic()
 
-        stu.wait_for(lambda: dataplane.check_flow_packets_metrics(dataplane.flows[0], show=True)[0], "Test", timeout_seconds=10)
+        stu.wait_for(lambda: dataplane.check_flow_packets_metrics(dataplane.flows[0], show=True)[0],
+                    "Test", timeout_seconds=10)
 
         print("Test passed !")
 
-    # @pytest.mark.skip
     def test_remove_vnet_config(self, confgen, dpu, dataplane):
 
         # confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG)

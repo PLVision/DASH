@@ -22,7 +22,7 @@ NUMBER_OF_ENI = 2
 NUMBER_OF_VNET = 2  # So far per ORE, but may be different
 NUMBER_OF_EAM = NUMBER_OF_ENI
 NUMBER_OF_ORE = 6  # Per ENI
-NUMBER_OF_OCPE = 2  # Per ORE
+NUMBER_OF_OCPE = 1  # Per ORE
 NUMBER_OF_IN_ACL_GROUP = 10
 NUMBER_OF_OUT_ACL_GROUP = 10
 
@@ -192,7 +192,6 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
 
 class TestSaiVnetOutbound:
 
-    # @pytest.mark.skip
     def test_create_vnet_config(self, confgen, dpu, dataplane):
 
         # confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG_SCALE)
@@ -208,7 +207,7 @@ class TestSaiVnetOutbound:
         for cmd, res in zip(setup_commands, result):
             print(cmd['name'], cmd['type'], res)
 
-    # @pytest.mark.skip
+    @pytest.mark.snappi
     def test_run_traffic_check(self, dpu, dataplane):
         dataplane.prepare_vxlan_packets(TEST_VNET_OUTBOUND_CONFIG_SCALE)
         dataplane.set_config()
@@ -219,7 +218,6 @@ class TestSaiVnetOutbound:
                     "Test", timeout_seconds=10)
         print("Test passed !")
 
-    # @pytest.mark.skip
     def test_remove_vnet_config(self, confgen, dpu, dataplane):
 
         # confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG_SCALE)
