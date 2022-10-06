@@ -2,16 +2,14 @@ import json
 from pathlib import Path
 from pprint import pprint
 
-import snappi
-import time
-
 import pytest
 from saichallenger.dataplane.ptf_testutils import (send_packet,
                                                    simple_udp_packet,
                                                    simple_vxlan_packet,
                                                    verify_packet,
                                                    verify_no_other_packets)
-import saichallenger.dataplane.snappi_trafic_utils as stu
+import saichallenger.dataplane.snappi.snappi_traffic_utils as stu
+import saichallenger.tests.dash_helper.vxlan_helper as dh
 
 current_file_dir = Path(__file__).parent
 
@@ -209,11 +207,11 @@ class TestSaiVnetOutbound:
 
     @pytest.mark.snappi
     def test_run_traffic_check(self, dpu, dataplane):
-        dataplane.prepare_vxlan_packets(TEST_VNET_OUTBOUND_CONFIG_SCALE)
+        dh.prepare_vxlan_packets(dataplane, TEST_VNET_OUTBOUND_CONFIG_SCALE)
         dataplane.set_config()
         dataplane.start_traffic()
 
-        stu.wait_for(lambda: dataplane.check_flows_all_packets_metrics(dataplane.flows,
+        stu.wait_for(lambda: dh.check_flows_all_packets_metrics(dataplane, dataplane.flows,
                                                                        name="Custom flow group", show=True)[0],
                     "Test", timeout_seconds=10)
         print("Test passed !")

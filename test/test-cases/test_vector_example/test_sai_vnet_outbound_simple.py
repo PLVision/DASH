@@ -2,9 +2,6 @@ import json
 from pathlib import Path
 from pprint import pprint
 
-import snappi
-import time
-
 import pytest
 from saichallenger.dataplane.ptf_testutils import (send_packet,
                                                    simple_udp_packet,
@@ -12,7 +9,8 @@ from saichallenger.dataplane.ptf_testutils import (send_packet,
                                                    verify_packet,
                                                    verify_no_other_packets)
 
-import saichallenger.dataplane.snappi_trafic_utils as stu
+import saichallenger.dataplane.snappi.snappi_traffic_utils as stu
+import saichallenger.tests.dash_helper.vxlan_helper as dh
 
 current_file_dir = Path(__file__).parent
 
@@ -135,12 +133,12 @@ class TestSaiVnetOutbound:
 
     @pytest.mark.snappi
     def test_simple_vxlan_packet(self, dpu, dataplane):
-        dataplane.prepare_vxlan_packets(TEST_VNET_OUTBOUND_CONFIG)
+        dh.prepare_vxlan_packets(dataplane, TEST_VNET_OUTBOUND_CONFIG)
 
         dataplane.set_config()
         dataplane.start_traffic()
 
-        stu.wait_for(lambda: dataplane.check_flow_packets_metrics(dataplane.flows[0], show=True)[0],
+        stu.wait_for(lambda: dh.check_flow_packets_metrics(dataplane, dataplane.flows[0], show=True)[0],
                     "Test", timeout_seconds=10)
 
         print("Test passed !")
