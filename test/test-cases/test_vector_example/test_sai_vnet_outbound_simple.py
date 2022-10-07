@@ -3,14 +3,14 @@ from pathlib import Path
 from pprint import pprint
 
 import pytest
+import saichallenger.dataplane.snappi.snappi_traffic_utils as stu
 from saichallenger.dataplane.ptf_testutils import (send_packet,
                                                    simple_udp_packet,
                                                    simple_vxlan_packet,
-                                                   verify_packet,
-                                                   verify_no_other_packets)
+                                                   verify_no_other_packets,
+                                                   verify_packet)
 
-import saichallenger.dataplane.snappi.snappi_traffic_utils as stu
-import saichallenger.tests.dash_helper.vxlan_helper as dh
+import dash_helper.vxlan_helper as dh
 
 current_file_dir = Path(__file__).parent
 
@@ -125,7 +125,7 @@ class TestSaiVnetOutbound:
         #     pprint(item)
         #     result += [dpu.command_processor.process_command(item)]
 
-        with (current_file_dir / 'test_vnet_outbound_setup_commands_simple.json').open(mode='r') as config_file:
+        with (current_file_dir / 'vnet_outbound_setup_commands_simple.json').open(mode='r') as config_file:
             setup_commands = json.load(config_file)
         result = [*dpu.process_commands(setup_commands)]
         print("\n======= SAI commands RETURN values =======")
@@ -152,7 +152,7 @@ class TestSaiVnetOutbound:
         #     item['OP'] = 'remove'
         #     pprint(item)
 
-        with (current_file_dir / 'test_vnet_outbound_cleanup_commands_simple.json').open(mode='r') as config_file:
+        with (current_file_dir / 'vnet_outbound_cleanup_commands_simple.json').open(mode='r') as config_file:
             cleanup_commands = json.load(config_file)
 
         result = [*dpu.process_commands(cleanup_commands)]
