@@ -133,7 +133,7 @@ class TestSaiVnetOutbound:
 
     @pytest.mark.snappi
     def test_simple_vxlan_packet(self, dpu, dataplane):
-        dh.prepare_vxlan_packets(dataplane, TEST_VNET_OUTBOUND_CONFIG)
+        dh.scale_vnet_outbound_flows(dataplane, TEST_VNET_OUTBOUND_CONFIG)
 
         dataplane.set_config()
         dataplane.start_traffic()

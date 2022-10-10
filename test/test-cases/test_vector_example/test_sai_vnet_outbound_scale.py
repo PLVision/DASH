@@ -16,8 +16,8 @@ current_file_dir = Path(__file__).parent
 
 # Constants for scale outbound
 NUMBER_OF_VIP = 1
-NUMBER_OF_DLE = 2
-NUMBER_OF_ENI = 2
+NUMBER_OF_DLE = 4
+NUMBER_OF_ENI = 4
 NUMBER_OF_VNET = 2  # So far per ORE, but may be different
 NUMBER_OF_EAM = NUMBER_OF_ENI
 NUMBER_OF_ORE = 6  # Per ENI

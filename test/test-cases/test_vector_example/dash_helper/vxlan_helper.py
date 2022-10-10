@@ -21,14 +21,15 @@ def configure_vnet_outbound_packet_flows(sai_dp, vip, vni, ca_smac, ca_dip):
             print(f"\t\tVNI {vni_val}")
             ca_smac_val = ca_smac.start
 
-            for ca_smac_number in range(0, ca_smac.count):
+            # for ca_smac_number in range(0, ca_smac.count):
+            if True:
 
                 ca_smac_number = vni_number % ca_smac.count
                 # print(f"\t\t\tCA SMAC: {ca_smac_val}")
                 print(f"\t\t\tCA SMAC: {tu.get_next_mac(ca_smac_val, step=ca_smac.step, number=ca_smac_number)}")
                 print(f"\t\t\t\tCA DIP {ca_dip.start}, count: {ca_dip.count}, step: {ca_dip.step}")
 
-                Check that ca_mac differs on each iteration
+                # Check that ca_mac differs on each iteration
                 flow = sai_dp.add_flow("flow {} > {} |vip#{}|vni#{}|ca_dip#{}|ca_mac#{}".format(
                                   sai_dp.configuration.ports[0].name, sai_dp.configuration.ports[1].name, vip_number, vni_number, ca_dip.start, ca_smac_number),
                                  packet_count=ca_dip.count)
