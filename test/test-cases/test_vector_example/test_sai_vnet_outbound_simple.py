@@ -120,10 +120,10 @@ class TestSaiVnetOutbound:
 
         # confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG)
         # confgen.generate()
-        # result = []
+        # results = []
         # for item in confgen.items():
         #     pprint(item)
-        #     result += [dpu.command_processor.process_command(item)]
+        #     results.append(dpu.command_processor.process_command(item))
 
         with (current_file_dir / 'vnet_outbound_setup_commands_simple.json').open(mode='r') as config_file:
             setup_commands = json.load(config_file)
@@ -147,10 +147,11 @@ class TestSaiVnetOutbound:
 
         # confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG)
         # confgen.generate()
-
+        # results = []
         # for item in confgen.items():
-        #     item['OP'] = 'remove'
+        #     item['op'] = 'remove'
         #     pprint(item)
+        #     results.append(dpu.command_processor.process_command(item))
 
         with (current_file_dir / 'vnet_outbound_cleanup_commands_simple.json').open(mode='r') as config_file:
             cleanup_commands = json.load(config_file)

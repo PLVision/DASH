@@ -189,14 +189,17 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
     }
 }
 
+
 class TestSaiVnetOutbound:
 
     def test_create_vnet_config(self, confgen, dpu, dataplane):
 
         # confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG_SCALE)
         # confgen.generate()
+        # results = []
         # for item in confgen.items():
         #     pprint(item)
+        #     results.append(dpu.command_processor.process_command(item))
 
         with (current_file_dir / 'vnet_outbound_setup_commands_scale.json').open(mode='r') as config_file:
             setup_commands = json.load(config_file)
@@ -220,14 +223,16 @@ class TestSaiVnetOutbound:
 
         # confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG_SCALE)
         # confgen.generate()
+        # results = []
         # for item in confgen.items():
         #     item['op'] = 'remove'
         #     pprint(item)
+        #     results.append(dpu.command_processor.process_command(item))
 
         with (current_file_dir / 'vnet_outbound_cleanup_commands_scale.json').open(mode='r') as config_file:
             cleanup_commands = json.load(config_file)
 
         result = [*dpu.process_commands(cleanup_commands)]
-        # print("\n======= SAI commands RETURN values =======")
-        # for cmd, res in zip(cleanup_commands, result):
-        #     print(cmd['name'], res)
+        print("\n======= SAI commands RETURN values =======")
+        for cmd, res in zip(cleanup_commands, result):
+            print(cmd['name'], res)
