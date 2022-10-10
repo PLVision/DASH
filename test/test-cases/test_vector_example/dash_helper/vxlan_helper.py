@@ -8,6 +8,8 @@ def configure_vnet_outbound_packet_flows(sai_dp, vip, vni, ca_smac, ca_dip):
     Define VNET Outbound routing flows
     """
 
+    ENI_PER_VNI = 2
+
     print("\nTest config:")
     print(f"{vip}\n{vni}\n{ca_smac}\n{ca_dip}\n")
 
@@ -21,11 +23,7 @@ def configure_vnet_outbound_packet_flows(sai_dp, vip, vni, ca_smac, ca_dip):
             print(f"\t\tVNI {vni_val}")
             ca_smac_val = ca_smac.start
 
-            # for ca_smac_number in range(0, ca_smac.count):
-            if True:
-
-                ca_smac_number = vni_number % ca_smac.count
-                # print(f"\t\t\tCA SMAC: {ca_smac_val}")
+            for ca_smac_number in range(vni_number * ENI_PER_VNI, vni_number * ENI_PER_VNI + ENI_PER_VNI):
                 print(f"\t\t\tCA SMAC: {tu.get_next_mac(ca_smac_val, step=ca_smac.step, number=ca_smac_number)}")
                 print(f"\t\t\t\tCA DIP {ca_dip.start}, count: {ca_dip.count}, step: {ca_dip.step}")
 
@@ -44,8 +42,6 @@ def configure_vnet_outbound_packet_flows(sai_dp, vip, vni, ca_smac, ca_dip):
                 sai_dp.add_ipv4_header(flow, dst_ip=ca_dip.start, src_ip="10.1.1.10", dst_step=ca_dip.step, dst_count=ca_dip.count,
                                     dst_choice=snappi.PatternFlowIpv4Dst.INCREMENT)
                 sai_dp.add_udp_header(flow)
-
-                ca_smac_val = tu.get_next_mac(ca_smac_val, ca_smac.step)
 
             vni_val += vni.step
 
