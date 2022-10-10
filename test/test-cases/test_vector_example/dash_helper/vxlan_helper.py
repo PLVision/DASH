@@ -2,7 +2,12 @@ import snappi
 import saichallenger.dataplane.traffic_utils as tu
 from collections import namedtuple
 
-def configure_vxlan_packet(sai_dp, vip, vni, ca_smac, ca_dip):
+
+def configure_vnet_outbound_packet_flows(sai_dp, vip, vni, ca_smac, ca_dip):
+    """
+    Define VNET Outbound routing flows
+    """
+
     print("\nTest config:")
     print(f"{vip}\n{vni}\n{ca_smac}\n{ca_dip}\n")
 
@@ -16,13 +21,14 @@ def configure_vxlan_packet(sai_dp, vip, vni, ca_smac, ca_dip):
             print(f"\t\tVNI {vni_val}")
             ca_smac_val = ca_smac.start
 
-            # for ca_smac_number in range(0, ca_smac.count):
-            if True:
+            for ca_smac_number in range(0, ca_smac.count):
+
                 ca_smac_number = vni_number % ca_smac.count
                 # print(f"\t\t\tCA SMAC: {ca_smac_val}")
                 print(f"\t\t\tCA SMAC: {tu.get_next_mac(ca_smac_val, step=ca_smac.step, number=ca_smac_number)}")
                 print(f"\t\t\t\tCA DIP {ca_dip.start}, count: {ca_dip.count}, step: {ca_dip.step}")
 
+                Check that ca_mac differs on each iteration
                 flow = sai_dp.add_flow("flow {} > {} |vip#{}|vni#{}|ca_dip#{}|ca_mac#{}".format(
                                   sai_dp.configuration.ports[0].name, sai_dp.configuration.ports[1].name, vip_number, vni_number, ca_dip.start, ca_smac_number),
                                  packet_count=ca_dip.count)
@@ -38,7 +44,7 @@ def configure_vxlan_packet(sai_dp, vip, vni, ca_smac, ca_dip):
                                     dst_choice=snappi.PatternFlowIpv4Dst.INCREMENT)
                 sai_dp.add_udp_header(flow)
 
-                # ca_smac_val = tu.get_next_mac(ca_smac_val, ca_smac.step)
+                ca_smac_val = tu.get_next_mac(ca_smac_val, ca_smac.step)
 
             vni_val += vni.step
 
@@ -48,7 +54,12 @@ def configure_vxlan_packet(sai_dp, vip, vni, ca_smac, ca_dip):
     for flow in sai_dp.flows:
         print(f">>>: {flow.name}")
 
-def prepare_vxlan_packets(sai_dp, test_conf: dict):
+
+def scale_vnet_outbound_flows(sai_dp, test_conf: dict):
+    """
+    Get scale options and define VNET Outbound routing flows
+    """
+
     vip_tup = namedtuple('VIP', 'count start step')
     vni_tup = namedtuple('VNI', 'count start step')
     ca_smac_tup = namedtuple('CA_SMAC', 'count start step')
@@ -65,7 +76,7 @@ def prepare_vxlan_packets(sai_dp, test_conf: dict):
     ca_smac = dict_helper(ca_smac_tup, test_conf['DASH_ENI_ETHER_ADDRESS_MAP']['eam']['MAC'], "00:00:00:00:00:01")
     ca_dip = dict_helper(ca_dip_tup, test_conf['DASH_OUTBOUND_CA_TO_PA']['ocpe']['DIP'], "0.0.0.1")
 
-    configure_vxlan_packet(sai_dp, vip, vni, ca_smac, ca_dip)
+    configure_vnet_outbound_packet_flows(sai_dp, vip, vni, ca_smac, ca_dip)
 
 
 def check_flows_all_packets_metrics(sai_dp, flows=[], name="Flow group", exp_tx=None, exp_rx=None, show=False):
@@ -102,6 +113,7 @@ def check_flows_all_packets_metrics(sai_dp, flows=[], name="Flow group", exp_tx=
 
     return success, { 'TX': act_tx, 'RX': act_rx }
 
+
 # exp = expected
 # act = actual
 # (bool, {'TX': int, 'RX': int})
@@ -134,9 +146,11 @@ def check_flow_packets_metrics(sai_dp, flow: snappi.Flow, exp_tx=None, exp_rx=No
 
     return False, { 'TX': act_tx, 'RX': act_rx }
 
+
 # TODO
 def check_flows_all_seconds_metrics(sai_dp):
     pass
+
 
 def check_flow_seconds_metrics(sai_dp, flow: snappi.Flow, seconds=None, exp_tx=None, exp_rx=None, delta=None, show=False):
     if not seconds:
@@ -175,13 +189,16 @@ def check_flow_seconds_metrics(sai_dp, flow: snappi.Flow, seconds=None, exp_tx=N
 
     return False, { 'TX': act_tx, 'RX': act_rx }
 
+
 # TODO
 def check_flows_all_continuous_metrics(sai_dp):
     pass
 
+
 # TODO
 def check_flow_continuous_metrics(sai_dp, flow: snappi.Flow):
     pass
+
 
 def add_simple_vxlan_packet(sai_dp,
                             flow: snappi.Flow,

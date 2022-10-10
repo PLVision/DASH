@@ -201,14 +201,13 @@ class TestSaiVnetOutbound:
         with (current_file_dir / 'vnet_outbound_setup_commands_scale.json').open(mode='r') as config_file:
             setup_commands = json.load(config_file)
         result = [*dpu.process_commands(setup_commands)]
-        print("\n======= SAI commands RETURN values =======")
-        # pprint(result)
-        for cmd, res in zip(setup_commands, result):
-            print(cmd['name'], cmd['type'], res)
+        # print("\n======= SAI commands RETURN values =======")
+        # for cmd, res in zip(setup_commands, result):
+        #     print(cmd['name'], cmd['type'], res)
 
     @pytest.mark.snappi
     def test_run_traffic_check(self, dpu, dataplane):
-        dh.prepare_vxlan_packets(dataplane, TEST_VNET_OUTBOUND_CONFIG_SCALE)
+        dh.scale_vnet_outbound_flows(dataplane, TEST_VNET_OUTBOUND_CONFIG_SCALE)
         dataplane.set_config()
         dataplane.start_traffic()
 
@@ -221,16 +220,14 @@ class TestSaiVnetOutbound:
 
         # confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG_SCALE)
         # confgen.generate()
-
         # for item in confgen.items():
-        #     item['OP'] = 'remove'
+        #     item['op'] = 'remove'
         #     pprint(item)
 
         with (current_file_dir / 'vnet_outbound_cleanup_commands_scale.json').open(mode='r') as config_file:
             cleanup_commands = json.load(config_file)
 
         result = [*dpu.process_commands(cleanup_commands)]
-        print("\n======= SAI commands RETURN values =======")
-        # pprint(result)
-        for cmd, res in zip(cleanup_commands, result):
-            print(cmd['name'], res)
+        # print("\n======= SAI commands RETURN values =======")
+        # for cmd, res in zip(cleanup_commands, result):
+        #     print(cmd['name'], res)
