@@ -13,7 +13,9 @@ def test_vnet_outbound_simple(dpu, cfg_type):
 
     result = [*dpu.process_commands(setup_commands)]
 
-    with (current_file_dir / f'vnet_outbound_cleanup_commands_{cfg_type}.json').open(mode='r') as config_file:
-        cleanup_commands = json.load(config_file)
+    cleanup_commands = []
+    for command in reversed(setup_commands):
+        command['op'] = 'remove'
+        cleanup_commands.append(command)
 
     result = [*dpu.process_commands(cleanup_commands)]

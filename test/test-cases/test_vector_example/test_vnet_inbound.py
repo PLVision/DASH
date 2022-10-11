@@ -10,7 +10,9 @@ def test_vnet_inbound(dpu, dataplane):
 
     result = [*dpu.process_commands(vnet_inbound_setup_commands)]
 
-    with (current_file_dir / 'vnet_inbound_cleanup_commands.json').open(mode='r') as config_file:
-        vnet_inbound_cleanup_commands = json.load(config_file)
+    vnet_inbound_cleanup_commands = []
+    for command in reversed(vnet_inbound_setup_commands):
+        command['op'] = 'remove'
+        vnet_inbound_cleanup_commands.append(command)
 
     result = [*dpu.process_commands(vnet_inbound_cleanup_commands)]

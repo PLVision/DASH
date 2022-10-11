@@ -10,7 +10,7 @@ from saichallenger.dataplane.ptf_testutils import (send_packet,
                                                    verify_no_other_packets,
                                                    verify_packet)
 
-import dash_helper.vxlan_helper as dh
+import dash_helper.vnet2vnet_helper as dh
 
 current_file_dir = Path(__file__).parent
 
