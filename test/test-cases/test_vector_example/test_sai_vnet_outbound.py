@@ -9,6 +9,8 @@ from saichallenger.dataplane.ptf_testutils import (send_packet,
                                                    verify_packet,
                                                    verify_no_other_packets)
 
+import time
+
 current_file_dir = Path(__file__).parent
 
 # Constants
@@ -136,11 +138,12 @@ class TestSaiVnetOutbound:
 
     def test_create_vnet_config(self, confgen, dpu, dataplane):
 
+        '''
         confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG)
         confgen.generate()
         for item in confgen.items():
             pprint(item)
-
+        '''
         with (current_file_dir / 'test_vnet_outbound_setup_commands.json').open(mode='r') as config_file:
             setup_commands = json.load(config_file)
         result = [*dpu.process_commands(setup_commands)]
@@ -153,62 +156,64 @@ class TestSaiVnetOutbound:
         OUTER_SMAC = "00:00:05:06:06:06"
         INNER_SMAC = "00:00:04:06:06:06"
 
-        # # check VIP drop
-        # WRONG_VIP = "172.16.100.100"
-        # inner_pkt = simple_udp_packet(eth_dst="02:02:02:02:02:02",
-        #                               eth_src=ENI_MAC,
-        #                               ip_dst=DST_CA_IP,
-        #                               ip_src=SRC_VM_IP)
-        # vxlan_pkt = simple_vxlan_packet(eth_dst=OUR_MAC,
-        #                                 eth_src=OUTER_SMAC,
-        #                                 ip_dst=WRONG_VIP,
-        #                                 ip_src=SRC_VM_PA_IP,
-        #                                 udp_sport=11638,
-        #                                 with_udp_chksum=False,
-        #                                 vxlan_vni=OUTBOUND_VNI,
-        #                                 inner_frame=inner_pkt)
-        # print("\n\nSending packet with wrong vip...\n\n", vxlan_pkt.__repr__())
-        # send_packet(dataplane, 0, vxlan_pkt)
-        # print("\nVerifying drop...")
-        # verify_no_other_packets(dataplane)
+        if True: # for easier turning on or off following part of code
 
-        # # check routing drop
-        # WRONG_DST_CA = "10.200.2.50"
-        # inner_pkt = simple_udp_packet(eth_dst="02:02:02:02:02:02",
-        #                               eth_src=ENI_MAC,
-        #                               ip_dst=WRONG_DST_CA,
-        #                               ip_src=SRC_VM_IP)
-        # vxlan_pkt = simple_vxlan_packet(eth_dst=OUR_MAC,
-        #                                 eth_src=OUTER_SMAC,
-        #                                 ip_dst=VIP,
-        #                                 ip_src=SRC_VM_PA_IP,
-        #                                 udp_sport=11638,
-        #                                 with_udp_chksum=False,
-        #                                 vxlan_vni=OUTBOUND_VNI,
-        #                                 inner_frame=inner_pkt)
-        # print("\nSending packet with wrong dst CA IP to verify routing drop...\n\n", vxlan_pkt.__repr__())
-        # send_packet(dataplane, 0, vxlan_pkt)
-        # print("\nVerifying drop...")
-        # verify_no_other_packets(dataplane)
+            # check VIP drop
+            WRONG_VIP = "172.16.100.100"
+            inner_pkt = simple_udp_packet(eth_dst="02:02:02:02:02:02",
+                                          eth_src=ENI_MAC,
+                                          ip_dst=DST_CA_IP,
+                                          ip_src=SRC_VM_IP)
+            vxlan_pkt = simple_vxlan_packet(eth_dst=OUR_MAC,
+                                            eth_src=OUTER_SMAC,
+                                            ip_dst=WRONG_VIP,
+                                            ip_src=SRC_VM_PA_IP,
+                                            udp_sport=11638,
+                                            with_udp_chksum=False,
+                                            vxlan_vni=OUTBOUND_VNI,
+                                            inner_frame=inner_pkt)
+            print("\n\nSending packet with wrong vip...\n\n", vxlan_pkt.__repr__())
+            send_packet(dataplane, 0, vxlan_pkt)
+            print("\nVerifying drop...")
+            verify_no_other_packets(dataplane)
 
-        # # check mapping drop
-        # WRONG_DST_CA = "10.1.211.211"
-        # inner_pkt = simple_udp_packet(eth_dst="02:02:02:02:02:02",
-        #                               eth_src=ENI_MAC,
-        #                               ip_dst=WRONG_DST_CA,
-        #                               ip_src=SRC_VM_IP)
-        # vxlan_pkt = simple_vxlan_packet(eth_dst=OUR_MAC,
-        #                                 eth_src=OUTER_SMAC,
-        #                                 ip_dst=VIP,
-        #                                 ip_src=SRC_VM_PA_IP,
-        #                                 udp_sport=11638,
-        #                                 with_udp_chksum=False,
-        #                                 vxlan_vni=OUTBOUND_VNI,
-        #                                 inner_frame=inner_pkt)
-        # print("\nSending packet with wrong dst CA IP to verify mapping drop...\n\n", vxlan_pkt.__repr__())
-        # send_packet(dataplane, 0, vxlan_pkt)
-        # print("\nVerifying drop...")
-        # verify_no_other_packets(dataplane)
+            # check routing drop
+            WRONG_DST_CA = "10.200.2.50"
+            inner_pkt = simple_udp_packet(eth_dst="02:02:02:02:02:02",
+                                          eth_src=ENI_MAC,
+                                          ip_dst=WRONG_DST_CA,
+                                          ip_src=SRC_VM_IP)
+            vxlan_pkt = simple_vxlan_packet(eth_dst=OUR_MAC,
+                                            eth_src=OUTER_SMAC,
+                                            ip_dst=VIP,
+                                            ip_src=SRC_VM_PA_IP,
+                                            udp_sport=11638,
+                                            with_udp_chksum=False,
+                                            vxlan_vni=OUTBOUND_VNI,
+                                            inner_frame=inner_pkt)
+            print("\nSending packet with wrong dst CA IP to verify routing drop...\n\n", vxlan_pkt.__repr__())
+            send_packet(dataplane, 0, vxlan_pkt)
+            print("\nVerifying drop...")
+            verify_no_other_packets(dataplane)
+
+            # check mapping drop
+            WRONG_DST_CA = "10.1.211.211"
+            inner_pkt = simple_udp_packet(eth_dst="02:02:02:02:02:02",
+                                          eth_src=ENI_MAC,
+                                          ip_dst=WRONG_DST_CA,
+                                          ip_src=SRC_VM_IP)
+            vxlan_pkt = simple_vxlan_packet(eth_dst=OUR_MAC,
+                                            eth_src=OUTER_SMAC,
+                                            ip_dst=VIP,
+                                            ip_src=SRC_VM_PA_IP,
+                                            udp_sport=11638,
+                                            with_udp_chksum=False,
+                                            vxlan_vni=OUTBOUND_VNI,
+                                            inner_frame=inner_pkt)
+            print("\nSending packet with wrong dst CA IP to verify mapping drop...\n\n", vxlan_pkt.__repr__())
+            send_packet(dataplane, 0, vxlan_pkt)
+            print("\nVerifying drop...")
+            verify_no_other_packets(dataplane)
 
         # check forwarding
         inner_pkt = simple_udp_packet(eth_dst = "02:02:02:02:02:02",
@@ -240,20 +245,28 @@ class TestSaiVnetOutbound:
         vxlan_exp_pkt['IP'].chksum = 0
 
         self.pkt_exp = vxlan_exp_pkt
-        print("\nSending outbound packet...\n\n", vxlan_pkt.__repr__())
-        send_packet(dataplane, 0, vxlan_pkt)
-        print("\nVerifying packet...\n", vxlan_exp_pkt.__repr__())
-        verify_packet(dataplane, vxlan_exp_pkt, 0)
+
+        for i in range(15):
+
+            print("\n\n ***** i = ", i)
+            # print("\nSending outbound packet...\n\n", vxlan_pkt.__repr__())
+            send_packet(dataplane, 0, vxlan_pkt)
+            time.sleep(0.01)
+            # print("\nVerifying packet...\n", vxlan_exp_pkt.__repr__())
+            verify_packet(dataplane, vxlan_exp_pkt, 0)
+
         print ("test_sai_thrift_outbound_udp_pkt_test OK")
 
     def test_remove_vnet_config(self, confgen, dpu, dataplane):
 
+        '''
         confgen.mergeParams(TEST_VNET_OUTBOUND_CONFIG)
         confgen.generate()
 
         for item in confgen.items():
             item['OP'] = 'remove'
             pprint(item)
+        '''
 
         with (current_file_dir / 'test_vnet_outbound_cleanup_commands.json').open(mode='r') as config_file:
             cleanup_commands = json.load(config_file)
@@ -261,3 +274,4 @@ class TestSaiVnetOutbound:
         result = [*dpu.process_commands(cleanup_commands)]
         print("\n======= SAI commands RETURN values =======")
         pprint(result)
+
