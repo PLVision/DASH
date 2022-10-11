@@ -174,9 +174,12 @@ class TestSaiVnetInbound:
         #     item['OP'] = 'remove'
         #     pprint(item)
 
-        with (current_file_dir / 'vnet_inbound_cleanup_commands.json').open(mode='r') as config_file:
-            vnet_inbound_cleanup_commands = json.load(config_file)
+        with (current_file_dir / 'vnet_inbound_setup_commands.json').open(mode='r') as config_file:
+            setup_commands = json.load(config_file)
+        cleanup_commands = []
+        for cmd in reversed(setup_commands):
+            cleanup_commands.append({'name': cmd['name'], 'op': 'remove'})
 
-        result = [*dpu.process_commands(vnet_inbound_cleanup_commands)]
+        result = [*dpu.process_commands(cleanup_commands)]
         print("\n======= SAI commands RETURN values =======")
         pprint(result)

@@ -17,11 +17,11 @@ current_file_dir = Path(__file__).parent
 # Constants for scale outbound
 NUMBER_OF_VIP = 1
 NUMBER_OF_DLE = 2
-NUMBER_OF_ENI = 4
-NUMBER_OF_VNET = 2  # So far per ORE, but may be different
+NUMBER_OF_ENI = 2
 NUMBER_OF_EAM = NUMBER_OF_ENI
-NUMBER_OF_ORE = 6  # Per ENI
-NUMBER_OF_OCPE = 1  # Per ORE
+NUMBER_OF_ORE = 2  # Per ENI
+NUMBER_OF_OCPE = 2  # Per ORE
+NUMBER_OF_VNET = NUMBER_OF_ENI + (NUMBER_OF_ORE * NUMBER_OF_ENI)  # So far per ORE, but may be different
 NUMBER_OF_IN_ACL_GROUP = 10
 NUMBER_OF_OUT_ACL_GROUP = 10
 
@@ -45,8 +45,8 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             'SWITCH_ID': '$SWITCH_ID',
             'VNI': {
                 'count': NUMBER_OF_DLE,
-                'start': 100,
-                'step': 100
+                'start': 5000,
+                'step': 1000
             },
             'ACTION': 'SET_OUTBOUND_DIRECTION'
         }
@@ -117,7 +117,7 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             },
             'VNET_ID': {
                 'count': NUMBER_OF_ENI,
-                'start': 'DASH_VNET#vnet#0'
+                'start': '$vnet_#{4}'
             }
         }
     },
@@ -133,7 +133,7 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             },
             'ENI_ID': {
                 'count': NUMBER_OF_ENI,
-                'start': 'DASH_ENI#eni#0'
+                'start': '$eni_#{0}'
             }
         }
     },
@@ -145,17 +145,17 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
             'ACTION': 'ROUTE_VNET',
             'DESTINATION': {
                 'count': NUMBER_OF_ORE,
-                'start': '10.1.2.0/24',
-                'step': '0.0.1.0'
+                'start': '10.1.1.0/31',
+                'step': '0.0.0.2'
             },
             'ENI_ID': {
                 'count': NUMBER_OF_ENI,
-                'start': 'DASH_ENI#eni#0',
+                'start': '$eni_#{0}',
                 'delay': NUMBER_OF_ORE
             },
             'DST_VNET_ID': {
                 'count': NUMBER_OF_VNET,
-                'start': 'DASH_VNET#vnet#0',
+                'start': '$vnet_#{0}',
                 'delay': NUMBER_OF_ORE
             }
         }
@@ -163,16 +163,16 @@ TEST_VNET_OUTBOUND_CONFIG_SCALE = {
 
     'DASH_OUTBOUND_CA_TO_PA': {
         'ocpe': {
-            'count': (NUMBER_OF_ENI * NUMBER_OF_ORE) * NUMBER_OF_OCPE,  # 1 Per ORE
+            'count': (NUMBER_OF_ENI * NUMBER_OF_ORE) * NUMBER_OF_OCPE,  # 2 Per ORE
             'SWITCH_ID': '$SWITCH_ID',
             'DIP': {
-                'count': NUMBER_OF_ORE,
-                'start': '10.1.2.50',
-                'step': '0.0.1.0'
+                'count': NUMBER_OF_ORE * NUMBER_OF_OCPE,
+                'start': '10.1.1.0',
+                'step': '0.0.0.1'
             },
             'DST_VNET_ID': {
                 'count': NUMBER_OF_VNET,
-                'start': 'DASH_VNET#vnet#0',
+                'start': '$vnet_#{0}',
                 'delay': NUMBER_OF_ORE
             },
             'UNDERLAY_DIP': {
@@ -216,7 +216,7 @@ class TestSaiVnetOutbound:
 
         stu.wait_for(lambda: dh.check_flows_all_packets_metrics(dataplane, dataplane.flows,
                                                                        name="Custom flow group", show=True)[0],
-                    "Test", timeout_seconds=10)
+                    "Test", timeout_seconds=2)
         print("Test passed !")
 
     def test_remove_vnet_config(self, confgen, dpu, dataplane):
@@ -229,10 +229,13 @@ class TestSaiVnetOutbound:
         #     pprint(item)
         #     results.append(dpu.command_processor.process_command(item))
 
-        with (current_file_dir / 'vnet_outbound_cleanup_commands_scale.json').open(mode='r') as config_file:
-            cleanup_commands = json.load(config_file)
+        with (current_file_dir / 'vnet_outbound_setup_commands_scale.json').open(mode='r') as config_file:
+            setup_commands = json.load(config_file)
+        cleanup_commands = []
+        for cmd in reversed(setup_commands):
+            cleanup_commands.append({'name': cmd['name'], 'op': 'remove'})
 
         result = [*dpu.process_commands(cleanup_commands)]
-        print("\n======= SAI commands RETURN values =======")
-        for cmd, res in zip(cleanup_commands, result):
-            print(cmd['name'], res)
+        # print("\n======= SAI commands RETURN values =======")
+        # for cmd, res in zip(cleanup_commands, result):
+        #     print(cmd['name'], res)
