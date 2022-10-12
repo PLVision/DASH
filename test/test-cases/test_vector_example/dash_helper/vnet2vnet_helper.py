@@ -3,7 +3,7 @@ import saichallenger.dataplane.traffic_utils as tu
 from collections import namedtuple
 
 
-def configure_vnet_outbound_packet_flows(sai_dp, vip, dir_lookup, ca_smac, ca_dip):
+def configure_vnet_outbound_packet_flows(sai_dp, vip, dir_lookup, ca_smac, ca_dip, pkt_count=1, pps=50, duration=0):
     """
     Define VNET Outbound routing flows
     """
@@ -31,7 +31,7 @@ def configure_vnet_outbound_packet_flows(sai_dp, vip, dir_lookup, ca_smac, ca_di
                 flow = sai_dp.add_flow("flow {} > {} |vip#{}|dir_lookup#{}|ca_mac#{}|ca_dip#{}".format(
                                             sai_dp.configuration.ports[0].name, sai_dp.configuration.ports[1].name,
                                             vip_number, dir_lookup_number, ca_smac_number, ca_dip.start),
-                                       packet_count=ca_dip.count)
+                                       packet_count=ca_dip.count * pkt_count, pps=pps, seconds_count=duration)
 
                 sai_dp.add_ethernet_header(flow, dst_mac="00:00:02:03:04:05", src_mac="00:00:05:06:06:06")
                 sai_dp.add_ipv4_header(flow, dst_ip=vip_val, src_ip="172.16.1.1")
@@ -55,7 +55,7 @@ def configure_vnet_outbound_packet_flows(sai_dp, vip, dir_lookup, ca_smac, ca_di
         print(f">>>: {flow.name}")
 
 
-def scale_vnet_outbound_flows(sai_dp, test_conf: dict):
+def scale_vnet_outbound_flows(sai_dp, test_conf: dict, packets_per_flow=1, pps_per_flow=10, flow_duration=0):
     """
     Get scale options and define VNET Outbound routing flows
     """
@@ -76,10 +76,11 @@ def scale_vnet_outbound_flows(sai_dp, test_conf: dict):
     ca_smac = dict_helper(ca_smac_tup, test_conf['DASH_ENI_ETHER_ADDRESS_MAP']['eam']['MAC'], "00:00:00:00:00:01")
     ca_dip = dict_helper(ca_dip_tup, test_conf['DASH_OUTBOUND_CA_TO_PA']['ocpe']['DIP'], "0.0.0.1")
 
-    configure_vnet_outbound_packet_flows(sai_dp, vip, dir_lookup, ca_smac, ca_dip)
+    configure_vnet_outbound_packet_flows(sai_dp, vip, dir_lookup, ca_smac, ca_dip,
+                                         pkt_count=packets_per_flow, pps=pps_per_flow, duration=flow_duration)
 
 
-def check_flows_all_packets_metrics(sai_dp, flows=[], name="Flow group", exp_tx=None, exp_rx=None, show=False):
+def check_flows_all_packets_metrics(sai_dp, flows, name="Flow group", exp_tx=None, exp_rx=None, show=False):
     if not flows:
         print("Flows None or empty")
         return False, None
@@ -147,9 +148,39 @@ def check_flow_packets_metrics(sai_dp, flow: snappi.Flow, exp_tx=None, exp_rx=No
     return False, { 'TX': act_tx, 'RX': act_rx }
 
 
-# TODO
-def check_flows_all_seconds_metrics(sai_dp):
-    pass
+def check_flows_all_seconds_metrics(sai_dp, flows, name="Flow group", exp_tx=None, exp_rx=None, show=False):
+    if not flows:
+        print("Flows None or empty")
+        return False, None
+    if not exp_tx:
+        # check if all flows are fixed_packets
+        # sum of bool list == count of True in this list
+        if sum([flow.duration.choice == snappi.FlowDuration.FIXED_PACKETS for flow in flows]) == len(flows):
+            exp_tx = sum([flow.duration.fixed_packets.packets for flow in flows])
+        else:
+            print("{}: some flow in flow group doesn't configured to {}.".format( \
+                    name, snappi.FlowDuration.FIXED_PACKETS))
+            return False, None
+    if not exp_rx:
+        exp_rx = exp_tx
+
+    act_tx = 0
+    act_rx = 0
+    success = 0
+
+    for flow in flows:
+        tmp = check_flow_packets_metrics(sai_dp, flow)
+        success += tmp[0]
+        act_tx += tmp[1]['TX']
+        act_rx += tmp[1]['RX']
+
+    success = success == len(flows)
+
+    if show:
+        # flow group name | exp tx | act tx | exp rx | act rx
+        print(f"{name} | exp tx:{exp_tx} - tx:{act_tx} | exp rx:{exp_rx} - rx:{act_rx}")
+
+    return success, { 'TX': act_tx, 'RX': act_rx }
 
 
 def check_flow_seconds_metrics(sai_dp, flow: snappi.Flow, seconds=None, exp_tx=None, exp_rx=None, delta=None, show=False):
@@ -157,7 +188,7 @@ def check_flow_seconds_metrics(sai_dp, flow: snappi.Flow, seconds=None, exp_tx=N
         if flow.duration.choice == snappi.FlowDuration.FIXED_SECONDS:
             seconds = flow.duration.fixed_seconds.seconds
         else:
-            print("{}: check for packet count failed. Flow configured to {} instead of {}".format( \
+            print("{}: check for packet count failed. Flow configured to {} instead of {}".format(
                     flow.name, flow.duration.choice, snappi.FlowDuration.FIXED_SECONDS))
             return False, None
     if not exp_tx:
