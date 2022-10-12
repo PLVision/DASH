@@ -13,15 +13,15 @@ NUMBER_OF_OCPE = 2  # Per ORE
 NUMBER_OF_VNET = NUMBER_OF_ENI + (NUMBER_OF_ORE * NUMBER_OF_ENI)
 ```
 
-Each VIP scales to traffic flows with each DIRECTON_LOOKUP.
+Each VIP scales to traffic flows with each DIRECTION_LOOKUP.
 ```python
 VIP 172.16.1.100
     DIR_LOOKUP VNI 5000
     DIR_LOOKUP VNI 6000
 ```
 
-This means that each DIRECTON_LOOKUP refers to its own set of ENI_ETHER_MAP.
-The set of ENI_ETHER_MAP for DIRECTON_LOOKUP is formed by the rule: `each DIRECTON_LOOKUP entry has the same amount of ENI_ETHER_MAP refers`.
+This means that each DIRECTION_LOOKUP refers to its own set of ENI_ETHER_MAP.
+The set of ENI_ETHER_MAP for DIRECTION_LOOKUP is formed by the rule: `each DIRECTION_LOOKUP entry has the same amount of ENI_ETHER_MAP refers`.
 
 ### Examples of DLE to ENI relations
 #### Example 1
@@ -29,7 +29,7 @@ The set of ENI_ETHER_MAP for DIRECTON_LOOKUP is formed by the rule: `each DIRECT
 NUMBER_OF_DLE = 2
 NUMBER_OF_ENI = 2
 ```
-According to this short config, each DIRECTON_LOOKUP refers to one ENI_ETHER_MAP.
+According to this short config, each DIRECTION_LOOKUP refers to one ENI_ETHER_MAP.
 ```python
 VIP "172.16.1.100"
     DIR_LOOKUP VNI 5000
@@ -43,7 +43,7 @@ VIP "172.16.1.100"
 NUMBER_OF_DLE = 2
 NUMBER_OF_ENI = 4
 ```
-According to this short config, each DIRECTON_LOOKUP refers to two ENI_ETHER_MAP.
+According to this short config, each DIRECTION_LOOKUP refers to two ENI_ETHER_MAP.
 ```python
 VIP "172.16.1.100"
     DIR_LOOKUP VNI 5000
