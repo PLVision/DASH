@@ -221,13 +221,14 @@ class TestSaiVnetOutbound:
 
     @pytest.mark.snappi
     def test_run_traffic_check_fixed_duration(self, dpu, dataplane):
+        TEST_DURATION = 10
         dh.scale_vnet_outbound_flows(dataplane, TEST_VNET_OUTBOUND_CONFIG_SCALE,
-                                     packets_per_flow=0, flow_duration=10, pps_per_flow=10)
+                                     packets_per_flow=0, flow_duration=TEST_DURATION, pps_per_flow=10)
         dataplane.set_config()
         dataplane.start_traffic()
         stu.wait_for(lambda: dh.check_flows_all_seconds_metrics(dataplane, dataplane.flows,
                                                                 name="Custom flow group", show=True)[0],
-                    "Test", timeout_seconds=5)
+                    "Test", timeout_seconds=TEST_DURATION + 1)
         print("Test passed !")
 
     def test_remove_vnet_config(self, confgen, dpu, dataplane):

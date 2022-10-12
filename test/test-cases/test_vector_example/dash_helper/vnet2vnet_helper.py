@@ -5,7 +5,17 @@ from collections import namedtuple
 
 def configure_vnet_outbound_packet_flows(sai_dp, vip, dir_lookup, ca_smac, ca_dip, pkt_count=1, pps=50, duration=0):
     """
-    Define VNET Outbound routing flows
+    Define VNET Outbound routing flows.
+
+    Parameters:
+        sai_dp: sai_dataplane.
+        vip (namedtuple(name, 'count start step')): DASH VIP.
+        dir_lookup (namedtuple(name, 'count start step')): direction lookup vni.
+        ca_smac (namedtuple(name, 'count start step')): client source MAC.
+        ca_dip (namedtuple(name, 'count start step')): client destination IP.
+        pkt_count (int): count of packets to send per each flow. Default is 1.
+        pps (int): packet per second for each flow. Default is 50.
+        duration (int): count in seconds to generate traffic for each flow. Default is 0.
     """
 
     print("\nTest config:")
@@ -57,7 +67,14 @@ def configure_vnet_outbound_packet_flows(sai_dp, vip, dir_lookup, ca_smac, ca_di
 
 def scale_vnet_outbound_flows(sai_dp, test_conf: dict, packets_per_flow=1, pps_per_flow=10, flow_duration=0):
     """
-    Get scale options and define VNET Outbound routing flows
+    Get scale options and define VNET Outbound routing flows.
+
+    Parameters:
+        sai_dp: sai_dataplane.
+        test_conf (dict): test config.
+        packets_per_flow (int): count of packets to send per each flow. Default is 1.
+        pps_per_flow (int): packet per second for each flow. Default is 10.
+        flow_duration (int): count in seconds to generate traffic for each flow. Default is 0.
     """
 
     vip_tup = namedtuple('VIP', 'count start step')
@@ -81,6 +98,22 @@ def scale_vnet_outbound_flows(sai_dp, test_conf: dict, packets_per_flow=1, pps_p
 
 
 def check_flows_all_packets_metrics(sai_dp, flows, name="Flow group", exp_tx=None, exp_rx=None, show=False):
+    """
+    Get packet count metrics on list of flows.
+
+    Parameters:
+        sai_dp: sai_dataplane.
+        flows: list of flows to check.
+        name (str): flow list's name. Default is "Flow group".
+        exp_tx (int): expected count of TX packets.
+        exp_rx (int): expected count of RX packets.
+        show (bool): flag to show metrics. Default is False.
+
+    Return:
+        tuple(bool, { int, int }): bool is True if all flow metrics are OK. First int is for
+            sum of TX packets from all flows. Second int is for sum of RX packets from all flows.
+    """
+
     if not flows:
         print("Flows None or empty")
         return False, None
@@ -109,16 +142,28 @@ def check_flows_all_packets_metrics(sai_dp, flows, name="Flow group", exp_tx=Non
     success = success == len(flows)
 
     if show:
-        # flow group name | exp tx | act tx | exp rx | act rx
+        # flow group name | exp tx - act tx | exp rx - act rx
         print(f"{name} | exp tx:{exp_tx} - tx:{act_tx} | exp rx:{exp_rx} - rx:{act_rx}")
 
     return success, { 'TX': act_tx, 'RX': act_rx }
 
 
-# exp = expected
-# act = actual
-# (bool, {'TX': int, 'RX': int})
 def check_flow_packets_metrics(sai_dp, flow: snappi.Flow, exp_tx=None, exp_rx=None, show=False):
+    """
+    Get packet count metrics on flow.
+
+    Parameters:
+        sai_dp: sai_dataplane.
+        flow (snappi.Flow): flow to check.
+        exp_tx (int): expected count of TX packets.
+        exp_rx (int): expected count of RX packets.
+        show (bool): flag to show metrics. Default is False.
+
+    Return:
+        tuple(bool, { int, int }): bool is result of metrics. First int is for TX packets,
+            second int is for RX packets.
+    """
+
     if not exp_tx:
         if flow.duration.choice == snappi.FlowDuration.FIXED_PACKETS:
             exp_tx = flow.duration.fixed_packets.packets
@@ -138,8 +183,8 @@ def check_flow_packets_metrics(sai_dp, flow: snappi.Flow, exp_tx=None, exp_rx=No
     act_rx = res.flow_metrics[0].frames_rx
 
     if show:
-        # flow name | exp tx | act tx | exp rx | act rx
-        print("{} | {} | {} | {} | {}".format(flow.name, exp_tx, act_tx, exp_rx, act_rx))
+        # flow group name | exp tx - act tx | exp rx - act rx
+        print(f"{flow.name} | exp tx:{exp_tx} - tx:{act_tx} | exp rx:{exp_rx} - rx:{act_rx}")
 
     if exp_tx == act_tx and exp_rx == act_rx and \
         res.flow_metrics[0].transmit == snappi.FlowMetric.STOPPED:
@@ -148,28 +193,50 @@ def check_flow_packets_metrics(sai_dp, flow: snappi.Flow, exp_tx=None, exp_rx=No
     return False, { 'TX': act_tx, 'RX': act_rx }
 
 
-def check_flows_all_seconds_metrics(sai_dp, flows, name="Flow group", exp_tx=None, exp_rx=None, show=False):
+def check_flows_all_seconds_metrics(sai_dp, flows, name="Flow group", seconds=None, exp_tx=None, exp_rx=None, delta=None, show=False):
+    """
+    Get packet count metrics per given time on list of flows.
+
+    Parameters:
+        sai_dp: sai dataplane.
+        flows: list of flow to check.
+        name (str): name of flow group. Default is "Flow group".
+        seconds (int): duration of traffic generating.
+        exp_tx (int): expected count of TX packets.
+        exp_rx (int): expected count of RX packets.
+        delta (int): permissible error in the calculation of TX/RX packets.
+        show (bool): flag to show metrics. Default is False.
+
+    Return:
+        tuple(bool, { int, int }): bool is True if all flow metrics are OK. First int is for
+            sum of TX packets from all flows. Second int is for sum of RX packets from all flows.
+    """
+
     if not flows:
         print("Flows None or empty")
         return False, None
-    if not exp_tx:
-        # check if all flows are fixed_packets
-        # sum of bool list == count of True in this list
-        if sum([flow.duration.choice == snappi.FlowDuration.FIXED_PACKETS for flow in flows]) == len(flows):
-            exp_tx = sum([flow.duration.fixed_packets.packets for flow in flows])
+    if not seconds:
+        if sum([flow.duration.choice == snappi.FlowDuration.FIXED_SECONDS for flow in flows]) == len(flows):
+            seconds = sum([flow.duration.fixed_seconds.seconds for flow in flows]) // len(flows)
         else:
-            print("{}: some flow in flow group doesn't configured to {}.".format( \
-                    name, snappi.FlowDuration.FIXED_PACKETS))
+            print("{}: some flow in flow group doesn't configured to {}".format(
+                    flow.name, snappi.FlowDuration.FIXED_SECONDS))
             return False, None
+    if not exp_tx:
+        exp_tx = sum([flow.rate.pps for flow in flows]) // len(flows) * seconds * len(flows)
     if not exp_rx:
         exp_rx = exp_tx
+    if not delta:
+        # default delta is 10% of exp_tx. If it 0 (seconds < 10) then delta == pps
+        tmp_delta = exp_tx // 10
+        delta = tmp_delta if tmp_delta > 0 else (sum([flow.rate.pps for flow in flows]) // len(flows))
 
     act_tx = 0
     act_rx = 0
     success = 0
 
     for flow in flows:
-        tmp = check_flow_packets_metrics(sai_dp, flow)
+        tmp = check_flow_seconds_metrics(sai_dp, flow)
         success += tmp[0]
         act_tx += tmp[1]['TX']
         act_rx += tmp[1]['RX']
@@ -177,13 +244,31 @@ def check_flows_all_seconds_metrics(sai_dp, flows, name="Flow group", exp_tx=Non
     success = success == len(flows)
 
     if show:
-        # flow group name | exp tx | act tx | exp rx | act rx
-        print(f"{name} | exp tx:{exp_tx} - tx:{act_tx} | exp rx:{exp_rx} - rx:{act_rx}")
+        # flow group name | [exp tx +-delta] - act tx | [exp rx +-delta] - act rx
+        print(f"{name} | exp tx:[{exp_tx - delta}, {exp_tx + delta}] - tx:{act_tx} | \
+exp rx:[{exp_rx - delta}, {exp_rx + delta}] - rx:{act_rx}")
 
     return success, { 'TX': act_tx, 'RX': act_rx }
 
 
 def check_flow_seconds_metrics(sai_dp, flow: snappi.Flow, seconds=None, exp_tx=None, exp_rx=None, delta=None, show=False):
+    """
+    Get packet count metrics per given time on flow.
+
+    Parameters:
+        sai_dp: sai dataplane.
+        flow (snappi.Flow): flow to check.
+        seconds (int): duration of traffic generating.
+        exp_tx (int): expected count of TX packets.
+        exp_rx (int): expected count of RX packets.
+        delta (int): permissible error in the calculation of TX/RX packets.
+        show (bool): flag to show metrics. Default is False.
+
+    Return:
+        tuple(bool, { int, int }): bool is result of metrics. First int is for TX packets,
+            second int is for RX packets.
+    """
+
     if not seconds:
         if flow.duration.choice == snappi.FlowDuration.FIXED_SECONDS:
             seconds = flow.duration.fixed_seconds.seconds
@@ -197,7 +282,7 @@ def check_flow_seconds_metrics(sai_dp, flow: snappi.Flow, seconds=None, exp_tx=N
         exp_rx = exp_tx
     if not delta:
         # default delta is 10% of exp_tx. If it 0 (seconds < 10) then delta == pps
-        tmp_delta = int(exp_tx / 10)
+        tmp_delta = exp_tx // 10
         delta = tmp_delta if tmp_delta > 0 else flow.rate.pps
 
     req = sai_dp.api.metrics_request()
@@ -209,9 +294,9 @@ def check_flow_seconds_metrics(sai_dp, flow: snappi.Flow, seconds=None, exp_tx=N
     act_rx = res.flow_metrics[0].frames_rx
 
     if show:
-        # flow name | [exp tx - delta, ext_tx + delta] | act tx | [exp rx - delta, exp_rx + delta] | act rx
-        print("{} | [{}, {}] | {} | [{}, {}] | {}".format(flow.name, exp_tx - delta, exp_tx + delta, act_tx, \
-                                                            exp_rx - delta, exp_rx + delta, act_rx))
+        # flow group name | [exp tx +-delta] - act tx | [exp rx +-delta] - act rx
+        print(f"{flow.name} | exp tx:[{exp_tx - delta}, {exp_tx + delta}] - tx:{act_tx} | \
+exp rx:[{exp_rx - delta}, {exp_rx + delta}] - rx:{act_rx}")
 
     if act_tx in range(exp_tx - delta, exp_tx + delta) and \
         act_rx in range(exp_rx - delta, exp_rx + delta) and \
@@ -245,6 +330,25 @@ def add_simple_vxlan_packet(sai_dp,
                             inner_dst_ip,
                             inner_src_ip
                             ):
+    """
+    Configure simple vxlan packet.
+
+    Parameters:
+        sai_dp: sai dataplane.
+        flow (snappi.Flow): flow to configure.
+        outer_dst_mac (str): destination MAC for outer frame.
+        outer_src_mac (str): source MAC for outer frame.
+        outer_dst_ip (str): destination IP for outer frame.
+        outer_src_ip (str): source IP for outer frame.
+        dst_udp_port (int): destination UPP port.
+        src_udp_port (int): source UDP port.
+        vni (int): VNI
+        inner_dst_mac (str): destination MAC for inner frame.
+        inner_src_mac (str): source MAC for inner frame.
+        inner_dst_ip (str): destination IP for inner frame.
+        inner_src_ip (str): source IP for inner frame.
+    """
+
     if flow == None:
         print("flow is None")
         return
