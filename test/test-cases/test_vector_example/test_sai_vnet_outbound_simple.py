@@ -1,4 +1,5 @@
 import json
+import time
 from pathlib import Path
 from pprint import pprint
 
@@ -236,6 +237,7 @@ class TestSaiVnetOutbound:
 
         print("\nSending outbound packet...\n\n", vxlan_pkt.__repr__())
         send_packet(dataplane, 0, vxlan_pkt)
+        time.sleep(0.5)
         print("\nVerifying packet...\n", vxlan_exp_pkt.__repr__())
         verify_packet(dataplane, vxlan_exp_pkt, 0)
 

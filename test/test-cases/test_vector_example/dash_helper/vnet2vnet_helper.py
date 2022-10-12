@@ -36,8 +36,6 @@ def configure_vnet_outbound_packet_flows(sai_dp, vip, dir_lookup, ca_smac, ca_di
             for ca_smac_number in range(ca_smac_start_index, ca_smac_start_index + ca_smac_portion):
                 print(f"\t\t\tCA SMAC: {tu.get_next_mac(ca_smac_val, step=ca_smac.step, number=ca_smac_number)}")
                 print(f"\t\t\t\tCA DIP {ca_dip.start}, count: {ca_dip.count}, step: {ca_dip.step}")
-
-                # Check that ca_mac differs on each iteration
                 flow = sai_dp.add_flow("flow {} > {} |vip#{}|dir_lookup#{}|ca_mac#{}|ca_dip#{}".format(
                                             sai_dp.configuration.ports[0].name, sai_dp.configuration.ports[1].name,
                                             vip_number, dir_lookup_number, ca_smac_number, ca_dip.start),
@@ -47,7 +45,6 @@ def configure_vnet_outbound_packet_flows(sai_dp, vip, dir_lookup, ca_smac, ca_di
                 sai_dp.add_ipv4_header(flow, dst_ip=vip_val, src_ip="172.16.1.1")
                 sai_dp.add_udp_header(flow, dst_port=80, src_port=11638)
                 sai_dp.add_vxlan_header(flow, vni=dir_lookup_val)
-                # sai_dp.add_ethernet_header(flow, dst_mac="02:02:02:02:02:02", src_mac=ca_smac_val)
                 sai_dp.add_ethernet_header(flow, dst_mac="02:02:02:02:02:02",
                                            src_mac=tu.get_next_mac(ca_smac_val, step=ca_smac.step, number=ca_smac_number))
 
@@ -304,66 +301,3 @@ exp rx:[{exp_rx - delta}, {exp_rx + delta}] - rx:{act_rx}")
         return True, { 'TX': act_tx, 'RX': act_rx }
 
     return False, { 'TX': act_tx, 'RX': act_rx }
-
-
-# TODO
-def check_flows_all_continuous_metrics(sai_dp):
-    pass
-
-
-# TODO
-def check_flow_continuous_metrics(sai_dp, flow: snappi.Flow):
-    pass
-
-
-def add_simple_vxlan_packet(sai_dp,
-                            flow: snappi.Flow,
-                            outer_dst_mac,
-                            outer_src_mac,
-                            outer_dst_ip,
-                            outer_src_ip,
-                            dst_udp_port,
-                            src_udp_port,
-                            vni,
-                            inner_dst_mac,
-                            inner_src_mac,
-                            inner_dst_ip,
-                            inner_src_ip
-                            ):
-    """
-    Configure simple vxlan packet.
-
-    Parameters:
-        sai_dp: sai dataplane.
-        flow (snappi.Flow): flow to configure.
-        outer_dst_mac (str): destination MAC for outer frame.
-        outer_src_mac (str): source MAC for outer frame.
-        outer_dst_ip (str): destination IP for outer frame.
-        outer_src_ip (str): source IP for outer frame.
-        dst_udp_port (int): destination UPP port.
-        src_udp_port (int): source UDP port.
-        vni (int): VNI
-        inner_dst_mac (str): destination MAC for inner frame.
-        inner_src_mac (str): source MAC for inner frame.
-        inner_dst_ip (str): destination IP for inner frame.
-        inner_src_ip (str): source IP for inner frame.
-    """
-
-    if flow == None:
-        print("flow is None")
-        return
-
-    if flow.packet:
-        print("packet in flow")
-        return
-
-    sai_dp.add_ethernet_header(flow, outer_dst_mac, outer_src_mac)
-    sai_dp.add_ipv4_header(flow, outer_dst_ip, outer_src_ip)
-    u = sai_dp.add_udp_header(flow, dst_udp_port, src_udp_port)
-    # TODO: report ixia bug (udp checksum still generated)
-    # u.checksum.choice = u.checksum.CUSTOM
-    # u.checksum.custom = 0
-    sai_dp.add_vxlan_header(flow, vni)
-    sai_dp.add_ethernet_header(flow, inner_dst_mac, inner_src_mac)
-    sai_dp.add_ipv4_header(flow, inner_dst_ip, inner_src_ip)
-    sai_dp.add_udp_header(flow)
