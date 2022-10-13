@@ -353,3 +353,133 @@ Bulk remove:
   }
 ```
 
+<!-- ************************************ -->
+
+# Traffic scaling scheme
+![Visualisation of traffic scaling](images/vnet2vnet_outbound_traffic_scaling.svg)
+This part contains a description of the test case and scaling approach.
+
+# Config
+## Part of config that represents [picture above](#traffic-scaling-scheme):
+```python
+NUMBER_OF_VIP = 1
+NUMBER_OF_DLE = 2
+NUMBER_OF_ENI = 2
+NUMBER_OF_EAM = NUMBER_OF_ENI
+NUMBER_OF_ORE = 2  # Per ENI
+NUMBER_OF_OCPE = 2  # Per ORE
+NUMBER_OF_VNET = NUMBER_OF_ENI + (NUMBER_OF_ORE * NUMBER_OF_ENI)
+
+TEST_VNET_OUTBOUND_CONFIG_SCALE = {
+
+    'DASH_VIP': {
+        'vpe': {
+            'count': NUMBER_OF_VIP,
+            ...
+        }
+    },
+
+    'DASH_DIRECTION_LOOKUP': {
+        'dle': {
+            'count': NUMBER_OF_DLE,
+            ...
+        }
+    },
+
+    'DASH_VNET': {
+        'vnet': {
+            'VNI': {
+                'count': NUMBER_OF_VNET,
+                ...
+        }
+    },
+
+    'DASH_ENI': {
+        'eni': {
+            'count': NUMBER_OF_ENI,
+            ...
+        }
+    },
+
+    'DASH_ENI_ETHER_ADDRESS_MAP': {
+        'eam': {
+            'count': NUMBER_OF_EAM,
+            ...
+        }
+    },
+
+    'DASH_OUTBOUND_ROUTING': {
+        'ore': {
+            'count': NUMBER_OF_ENI * NUMBER_OF_ORE,  # Full count: OREs per ENI and VNET
+            ...
+        }
+    },
+
+    'DASH_OUTBOUND_CA_TO_PA': {
+        'ocpe': {
+            'count': (NUMBER_OF_ENI * NUMBER_OF_ORE) * NUMBER_OF_OCPE,  # 2 Per ORE
+            ...
+        }
+    }
+}
+```
+
+Each VIP scales to traffic flows with each ENI.
+For simplicity DIRECTION_LOOKUP are mapped to set of ENI_ETHER_MAP.
+The set of ENI_ETHER_MAP for DIRECTION_LOOKUP is formed by the rule: `each DIRECTION_LOOKUP entry has the same amount of ENI_ETHER_MAP refers`.
+
+### Examples of DLE to ENI relations
+These short snippets are applicable with [this config example](#part-of-config-that-represents-picture-above).
+#### Example 1
+```python
+NUMBER_OF_DLE = 2
+NUMBER_OF_ENI = 2
+```
+According to this short config, each DIRECTION_LOOKUP refers to one ENI_ETHER_MAP.
+```python
+VIP "172.16.1.100"
+    DIR_LOOKUP VNI 5000
+        CA SMAC: "00:CC:CC:CC:00:00"
+    DIR_LOOKUP VNI 6000
+        CA SMAC: "00:CC:CC:CC:00:01"
+```
+
+#### Example 2
+```python
+NUMBER_OF_DLE = 2
+NUMBER_OF_ENI = 4
+```
+According to this short config, each DIRECTION_LOOKUP refers to two ENI_ETHER_MAP.
+```python
+VIP "172.16.1.100"
+    DIR_LOOKUP VNI 5000
+        CA SMAC: "00:CC:CC:CC:00:00"
+        CA SMAC: "00:CC:CC:CC:00:01"
+    DIR_LOOKUP VNI 6000
+        CA SMAC: "00:CC:CC:CC:00:02"
+        CA SMAC: "00:CC:CC:CC:00:03"
+```
+
+Each ENI_ETHER_MAP refers to one ENI.
+
+ENI scales to OUTBOUND_ROUTING in the ratio: `two OUTBOUND_ROUTING entries per one ENI`.
+
+OUTBOUND_ROUTING scales to OUTBOUND_CA_TO_PA in the ratio: `two OUTBOUND_CA_TO_PA entries per one OUTBOUND_ROUTING`.
+
+## Example of scaling
+```python
+VIP "172.16.1.100"
+    DIR_LOOKUP VNI 5000
+        CA SMAC: "00:CC:CC:CC:00:00"
+            CA DIP "10.1.1.0", count: 4, step: "0.0.0.1"
+        CA SMAC: "00:CC:CC:CC:00:01"
+            CA DIP "10.1.1.0", count: 4, step: "0.0.0.1"
+    DIR_LOOKUP VNI 6000
+        CA SMAC: "00:CC:CC:CC:00:02"
+            CA DIP "10.1.1.0", count: 4, step: "0.0.0.1"
+        CA SMAC: "00:CC:CC:CC:00:03"
+            CA DIP "10.1.1.0", count: 4, step: "0.0.0.1"
+```
+
+# Outbound scenario explanation
+![Outbound scenario explanation](images/outbound_scenario_explained.svg)
