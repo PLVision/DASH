@@ -356,7 +356,7 @@ Bulk remove:
 <!-- ************************************ -->
 
 # Traffic scaling scheme
-![Visualisation of traffic scaling](images/vnet2vnet_outbound_traffic_scaling.svg)
+![Visualization of traffic scaling](images/vnet2vnet_outbound_traffic_scaling.svg)
 This part contains a description of the test case and scaling approach.
 
 # Config
@@ -428,7 +428,7 @@ Each VIP scales to traffic flows with each ENI.
 For simplicity DIRECTION_LOOKUP are mapped to set of ENI_ETHER_MAP.
 The set of ENI_ETHER_MAP for DIRECTION_LOOKUP is formed by the rule: `each DIRECTION_LOOKUP entry has the same amount of ENI_ETHER_MAP refers`.
 
-### Examples of DLE to ENI relations
+### Examples of DIRECTION_LOOKUP to ENI relations
 These short snippets are applicable with [this config example](#part-of-config-that-represents-picture-above).
 #### Example 1
 ```python
