@@ -520,7 +520,7 @@ undeploy-ixiac:
 # SAI-CHALLENGER TARGETS
 ###############################
 
-SAI_CHALLENGER_PATH = $(PWD)/../test/SAI-Challenger.OCP
+SAI_CHALLENGER_PATH = $(PWD)/../test/SAI-Challenger
 
 CONTAINER_SAI_CHALLENGER_CLIENT_NAME = dash-saichallenger-client-$(USER)
 
