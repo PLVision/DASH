@@ -288,6 +288,7 @@ LLDP
 lldp
 loadbalancer
 lookups
+LOOKUPs
 loopback
 LPM
 lts
@@ -296,6 +297,7 @@ makefile
 Makefile
 Makefiles
 makefiles
+MAPs
 MatchedHalfOpenFlow
 MatchedOtherFlow
 MatchedTcpFlow
