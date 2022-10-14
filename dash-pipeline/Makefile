@@ -553,7 +553,7 @@ docker-publish-saichallenger-client:
 
 DOCKER_RUN_SAI_CHALLENGER_CLIENT=docker run \
 	-v $(SAI_CHALLENGER_PATH):/sai-challenger \
-	-v $(SAI_CHALLENGER_PATH)/../test-cases/test_vector_example/:/sai-challenger/dash_tests \
+	-v $(SAI_CHALLENGER_PATH)/../test-cases/scale/saic/:/sai-challenger/dash_tests \
 	-v $(PWD)/../:/dash \
 	--cap-add=NET_ADMIN \
 	--device /dev/net/tun:/dev/net/tun \
