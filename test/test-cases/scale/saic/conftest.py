@@ -74,8 +74,12 @@ def confgen():
 
         def items(self, reverse=False):
             result = []
-            for c in self.configs:
-                result.extend(c.items())
+            if reverse:
+                for c in reversed(self.configs):
+                    result.extend(c.items())
+            else:
+                for c in self.configs:
+                    result.extend(c.items())
             return result
 
     return SaiConfig()
